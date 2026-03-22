@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>প্রশ্নমালা — AI QA Evaluator</title>
+<title>Learn Arabic — Made by Imran</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -36,58 +36,50 @@
   header {
     background: var(--text);
     color: var(--bg);
-    padding: 18px 40px;
+    padding: 4px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
-    border-bottom: 3px solid var(--gold);
+    border-bottom: 1px solid var(--gold);
+    min-height: 32px;
   }
 
   .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 5px;
   }
 
-  .logo-icon {
-    width: 38px;
-    height: 38px;
-    background: var(--gold);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
+  .logo-icon { display: none; }
 
   .logo-text h1 {
     font-family: 'Crimson Pro', serif;
-    font-size: 22px;
-    letter-spacing: 1px;
-    color: var(--bg);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--gold);
+    font-weight: 600;
   }
 
   .logo-text span {
-    font-size: 11px;
-    color: rgba(245,240,232,0.6);
-    letter-spacing: 3px;
+    font-size: 7px;
+    color: rgba(245,240,232,0.4);
+    letter-spacing: 1px;
     text-transform: uppercase;
   }
 
   .stats-bar {
     display: flex;
-    gap: 20px;
+    gap: 6px;
+    align-items: center;
   }
 
-  .stat {
-    text-align: center;
-  }
+  .stat { text-align: center; }
 
   .stat-num {
-    font-size: 20px;
+    font-size: 11px;
     font-weight: 700;
     font-family: 'Crimson Pro', serif;
     line-height: 1;
@@ -98,10 +90,10 @@
   .stat-num.gold { color: var(--gold); }
 
   .stat-label {
-    font-size: 10px;
-    letter-spacing: 1px;
+    font-size: 6px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    color: rgba(245,240,232,0.5);
+    color: rgba(245,240,232,0.4);
   }
 
   main {
@@ -747,23 +739,17 @@
   <div class="logo">
     <div class="logo-icon">📚</div>
     <div class="logo-text">
-      <h1>প্রশ্নমালা</h1>
-      <span>AI QA Evaluator</span>
+      <h1 data-bn="Learn Arabic" data-en="Learn Arabic">Learn Arabic</h1>
+      <span>Made by Imran</span>
     </div>
   </div>
   <div class="stats-bar">
-    <div class="stat">
-      <div class="stat-num green" id="correctCount">0</div>
-      <div class="stat-label">সঠিক</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num red" id="incorrectCount">0</div>
-      <div class="stat-label">ভুল</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num gold" id="totalCount">0</div>
-      <div class="stat-label">মোট</div>
-    </div>
+    <div id="hijriDate" style="font-size:10px; color:rgba(245,240,232,0.7); letter-spacing:0.3px;"></div>
+    <button id="langBtn" onclick="toggleLang()" style="
+      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25);
+      color:var(--bg); border-radius:6px; padding:4px 10px; font-size:12px;
+      font-weight:700; cursor:pointer; font-family:'Hind Siliguri',sans-serif;
+      transition:all 0.2s; letter-spacing:0.5px;">EN</button>
   </div>
 </header>
 
@@ -844,104 +830,89 @@
 
 <main>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('db')">🗄️ ডেটাবেজ</button>
-    <button class="tab" onclick="switchTab('quiz')">✍️ পরীক্ষা দাও</button>
-    <button class="tab" onclick="switchTab('practice')">🔁 প্র্যাকটিস</button>
-    <button class="tab" onclick="switchTab('search')">🔍 খুঁজুন</button>
-    <button class="tab" onclick="switchTab('history')">📋 ইতিহাস</button>
+    <button class="tab active" onclick="switchTab('db')" data-bn="🗄️ ডেটাবেজ" data-en="🗄️ Database">🗄️ ডেটাবেজ</button>
+    <button class="tab" onclick="switchTab('quiz')" data-bn="✍️ পরীক্ষা দাও" data-en="✍️ Quiz">✍️ পরীক্ষা দাও</button>
+    <button class="tab" onclick="switchTab('practice')" data-bn="🔁 প্র্যাকটিস" data-en="🔁 Practice">🔁 প্র্যাকটিস</button>
+    <button class="tab" onclick="switchTab('search')" data-bn="🔍 খুঁজুন" data-en="🔍 Search">🔍 খুঁজুন</button>
+    <button class="tab" onclick="switchTab('history')" data-bn="📝 নোটস" data-en="📝 Notes">📝 নোটস</button>
   </div>
 
   <!-- DATABASE PANEL -->
   <div class="panel active" id="panel-db">
-    <div class="section-title">📖 প্রশ্ন-উত্তর ডেটাবেজ</div>
-    <p class="section-sub">এখানে প্রশ্ন ও সঠিক উত্তর যোগ করুন। প্রশ্ন যোগ করলেই <strong>অটোমেটিক সেভ</strong> হয়ে যাবে — পেজ বন্ধ করলেও মুছবে না। ✅</p>
 
     <div class="export-import-bar">
-      <button class="btn-outline" onclick="exportDB()">📤 ব্যাকআপ নিন (Export)</button>
-      <button class="btn-outline" onclick="importDB()">📥 ব্যাকআপ লোড করুন (Import)</button>
+      <button class="btn-outline" onclick="exportDB()" data-bn="📤 ব্যাকআপ নিন (Export)" data-en="📤 Backup (Export)">📤 ব্যাকআপ নিন (Export)</button>
+      <button class="btn-outline" onclick="importDB()" data-bn="📥 ব্যাকআপ লোড করুন (Import)" data-en="📥 Load Backup (Import)">📥 ব্যাকআপ লোড করুন (Import)</button>
     </div>
 
     <div class="db-add-form">
-      <h3>➕ নতুন প্রশ্ন যোগ করুন</h3>
-      <label>প্রশ্ন</label>
-      <input type="text" id="newQuestion" placeholder="প্রশ্ন লিখুন..." />
-      <label>সঠিক উত্তর</label>
-      <input type="text" id="newAnswer" placeholder="সঠিক উত্তর লিখুন..." />
-      <button class="btn-primary" onclick="addQA()">✚ যোগ করুন</button>
+      <h3 data-bn="➕ নতুন প্রশ্ন যোগ করুন" data-en="➕ Add New Question">➕ নতুন প্রশ্ন যোগ করুন</h3>
+      <label data-bn="প্রশ্ন" data-en="Question">প্রশ্ন</label>
+      <input type="text" id="newQuestion" data-placeholder-bn="প্রশ্ন লিখুন..." data-placeholder-en="Write question..." placeholder="প্রশ্ন লিখুন..." />
+      <label data-bn="সঠিক উত্তর" data-en="Correct Answer">সঠিক উত্তর</label>
+      <input type="text" id="newAnswer" data-placeholder-bn="সঠিক উত্তর লিখুন..." data-placeholder-en="Write correct answer..." placeholder="সঠিক উত্তর লিখুন..." />
+      <button class="btn-primary" onclick="addQA()" data-bn="✚ যোগ করুন" data-en="✚ Add">✚ যোগ করুন</button>
     </div>
 
-    <!-- Search Bar -->
     <div style="position:relative; margin-bottom:14px;">
       <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none;">🔍</span>
-      <input type="text" id="dbSearch" placeholder="প্রশ্ন বা উত্তর খুঁজুন..." oninput="searchDB()"
-        style="padding-left:42px; margin-bottom:0;" />
+      <input type="text" id="dbSearch" data-placeholder-bn="প্রশ্ন বা উত্তর খুঁজুন..." data-placeholder-en="Search questions or answers..." placeholder="প্রশ্ন বা উত্তর খুঁজুন..." oninput="searchDB()" style="padding-left:42px; margin-bottom:0;" />
     </div>
     <div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="searchResultCount"></div>
-
     <div class="db-list" id="dbList"></div>
   </div>
 
   <!-- QUIZ PANEL -->
   <div class="panel" id="panel-quiz">
-    <div class="section-title">✍️ পরীক্ষা দাও</div>
-    <p class="section-sub">প্রশ্ন বেছে নিন, উত্তর দিন — AI মূল্যায়ন করবে।</p>
 
     <div class="quiz-select">
-      <label>প্রশ্ন বেছে নিন</label>
+      <label data-bn="প্রশ্ন বেছে নিন" data-en="Select a Question">প্রশ্ন বেছে নিন</label>
       <select id="questionSelect" onchange="loadQuestion()">
-        <option value="">-- প্রশ্ন বেছে নিন --</option>
+        <option value="" data-bn="-- প্রশ্ন বেছে নিন --" data-en="-- Select a question --">-- প্রশ্ন বেছে নিন --</option>
       </select>
     </div>
 
     <div id="questionArea" style="display:none;">
       <div class="question-card">
-        <div class="q-label">প্রশ্ন</div>
+        <div class="q-label" data-bn="প্রশ্ন" data-en="Question">প্রশ্ন</div>
         <div class="q-text" id="questionText"></div>
       </div>
-
       <div class="answer-area">
-        <label>আপনার উত্তর</label>
-        <textarea id="userAnswer" rows="4" placeholder="এখানে উত্তর লিখুন..."></textarea>
+        <label data-bn="আপনার উত্তর" data-en="Your Answer">আপনার উত্তর</label>
+        <textarea id="userAnswer" rows="4" data-placeholder-bn="এখানে উত্তর লিখুন..." data-placeholder-en="Write your answer here..." placeholder="এখানে উত্তর লিখুন..."></textarea>
       </div>
-
-      <button class="submit-btn" id="submitBtn" onclick="evaluateAnswer()">
-        🔍 উত্তর যাচাই করুন
-      </button>
-
+      <button class="submit-btn" id="submitBtn" onclick="evaluateAnswer()" data-bn="🔍 উত্তর যাচাই করুন" data-en="🔍 Check Answer">🔍 উত্তর যাচাই করুন</button>
       <div class="eval-loading" id="evalLoading">
         <div class="spinner"></div>
-        <span>AI মূল্যায়ন করছে...</span>
+        <span data-bn="AI মূল্যায়ন করছে..." data-en="AI is evaluating...">AI মূল্যায়ন করছে...</span>
       </div>
-
       <div class="error-box" id="evalError"></div>
-
       <div class="result-card" id="resultCard">
         <span class="result-icon" id="resultIcon"></span>
         <div class="result-text" id="resultText"></div>
       </div>
-
-      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">পরবর্তী প্রশ্ন →</button>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()" data-bn="পরবর্তী প্রশ্ন →" data-en="Next Question →">পরবর্তী প্রশ্ন →</button>
     </div>
   </div>
 
   <!-- PRACTICE PANEL -->
   <div class="panel" id="panel-practice">
-    <div class="section-title">🔁 প্র্যাকটিস মোড</div>
-    <p class="section-sub">যে প্রশ্নগুলো প্র্যাকটিস করতে চান সিলেক্ট করুন, তারপর একে একে উত্তর দিন।</p>
+    <div class="section-title" data-bn="🔁 প্র্যাকটিস মোড" data-en="🔁 Practice Mode">🔁 প্র্যাকটিস মোড</div>
+    <p class="section-sub" data-bn="প্রশ্নগুলো সিলেক্ট করুন, তারপর একে একে উত্তর দিন।" data-en="Select questions, then answer them one by one.">যে প্রশ্নগুলো প্র্যাকটিস করতে চান সিলেক্ট করুন, তারপর একে একে উত্তর দিন।</p>
 
     <div class="db-add-form" id="practiceSetup">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
-        <h3 style="color:var(--gold); font-size:12px; letter-spacing:0.5px; text-transform:uppercase; font-weight:700;">প্রশ্ন বেছে নিন</h3>
+        <h3 style="color:var(--gold); font-size:12px; letter-spacing:0.5px; text-transform:uppercase; font-weight:700;" data-bn="প্রশ্ন বেছে নিন" data-en="Select Questions">প্রশ্ন বেছে নিন</h3>
         <div style="display:flex; gap:8px;">
-          <button class="btn-outline" onclick="selectAllPractice()">সব সিলেক্ট</button>
+          <button class="btn-outline" onclick="selectAllPractice()" data-bn="সব সিলেক্ট" data-en="Select All">সব সিলেক্ট</button>
         </div>
       </div>
       <div id="practiceCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; color:var(--muted);">
-          <input type="checkbox" id="randomOrder" style="width:16px; height:16px; cursor:pointer;"> এলোমেলো ক্রমে
+          <input type="checkbox" id="randomOrder" style="width:16px; height:16px; cursor:pointer;"> <span data-bn="এলোমেলো ক্রমে" data-en="Random Order">এলোমেলো ক্রমে</span>
         </label>
-        <button class="btn-primary" onclick="startPractice()" style="flex:1; min-width:120px;">▶ শুরু করুন</button>
+        <button class="btn-primary" onclick="startPractice()" style="flex:1; min-width:120px;" data-bn="▶ শুরু করুন" data-en="▶ Start">▶ শুরু করুন</button>
       </div>
     </div>
 
@@ -958,12 +929,12 @@
       </div>
 
       <div class="question-card">
-        <div class="q-label">প্রশ্ন <span id="practiceQNum"></span></div>
+        <div class="q-label" id="practiceQLabel">প্রশ্ন <span id="practiceQNum"></span></div>
         <div class="q-text" id="practiceQText"></div>
       </div>
 
       <div class="answer-area">
-        <label>আপনার উত্তর</label>
+        <label id="practiceAnsLabel" data-bn="আপনার উত্তর" data-en="Your Answer">আপনার উত্তর</label>
         <textarea id="practiceAnswer" rows="4" placeholder="এখানে উত্তর লিখুন..."></textarea>
       </div>
 
@@ -1046,12 +1017,11 @@
 
   <!-- SEARCH PANEL -->
   <div class="panel" id="panel-search">
-    <div class="section-title">🔍 খুঁজুন</div>
-    <p class="section-sub">প্রশ্ন বা উত্তরের যেকোনো অংশ লিখুন — সাথে সাথে খুঁজে দেবে।</p>
-
+    <div class="section-title" data-bn="🔍 খুঁজুন" data-en="🔍 Search">🔍 খুঁজুন</div>
+    <p class="section-sub" data-bn="প্রশ্ন বা উত্তরের যেকোনো অংশ লিখুন — সাথে সাথে খুঁজে দেবে।" data-en="Type any part of a question or answer — results appear instantly.">প্রশ্ন বা উত্তরের যেকোনো অংশ লিখুন — সাথে সাথে খুঁজে দেবে।</p>
     <div style="position:relative; margin-bottom:8px;">
       <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:18px; pointer-events:none;">🔍</span>
-      <input type="text" id="mainSearch" placeholder="এখানে লিখুন..." oninput="doMainSearch()"
+      <input type="text" id="mainSearch" data-placeholder-bn="এখানে লিখুন..." data-placeholder-en="Type here..." placeholder="এখানে লিখুন..." oninput="doMainSearch()"
         style="padding-left:46px; font-size:17px; margin-bottom:0;" autofocus />
     </div>
     <div style="font-size:13px; color:var(--muted); margin-bottom:16px;" id="mainSearchCount"></div>
@@ -1060,19 +1030,16 @@
 
   <!-- HISTORY PANEL -->
   <div class="panel" id="panel-history">
-    <div class="section-title">📋 মূল্যায়নের ইতিহাস</div>
-    <p class="section-sub">আপনার সব উত্তরের ফলাফল এখানে দেখুন।</p>
     <div id="historyList"></div>
 
     <div style="margin-top: 32px; border-top: 2px dashed var(--border); padding-top: 24px;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-        <div class="section-title" style="font-size:20px; margin-bottom:0;">📝 নোটসমূহ</div>
-        <button class="btn-primary" onclick="addNewNote()">✚ নতুন নোট</button>
+        <div class="section-title" style="font-size:20px; margin-bottom:0;" data-bn="📝 নোটসমূহ" data-en="📝 Notes">📝 নোটসমূহ</div>
+        <button class="btn-primary" onclick="addNewNote()" data-bn="✚ নতুন নোট" data-en="✚ New Note">✚ নতুন নোট</button>
       </div>
-      <!-- Note Search -->
       <div style="position:relative; margin-bottom:14px;">
         <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; pointer-events:none;">🔍</span>
-        <input type="text" id="noteSearch" placeholder="নোট খুঁজুন..." oninput="searchNotes()"
+        <input type="text" id="noteSearch" data-placeholder-bn="নোট খুঁজুন..." data-placeholder-en="Search notes..." placeholder="নোট খুঁজুন..." oninput="searchNotes()"
           style="padding-left:40px; margin-bottom:0; font-size:14px;" />
       </div>
       <div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="noteSearchCount"></div>
@@ -1148,26 +1115,45 @@
     const list = document.getElementById('dbList');
     const items = filtered !== null ? filtered : database.map((item, i) => ({ ...item, origIndex: i }));
     if (database.length === 0) {
-      list.innerHTML = '<div class="empty-state">📭 এখনো কোনো প্রশ্ন নেই। উপরে যোগ করুন।</div>';
+      const isEn = currentLang === 'en';
+      list.innerHTML = '<div class="empty-state">📭 ' + (isEn ? 'No questions yet. Add above.' : 'এখনো কোনো প্রশ্ন নেই। উপরে যোগ করুন।') + '</div>';
       return;
     }
     if (items.length === 0) {
-      list.innerHTML = '<div class="empty-state">🔍 কোনো ফলাফল পাওয়া যায়নি।</div>';
+      const isEn = currentLang === 'en';
+      list.innerHTML = '<div class="empty-state">🔍 ' + (isEn ? 'No results found.' : 'কোনো ফলাফল পাওয়া যায়নি।') + '</div>';
       return;
     }
     list.innerHTML = items.map((item) => {
       const i = item.origIndex !== undefined ? item.origIndex : database.indexOf(item);
-      return `
-      <div class="db-item">
-        <div class="db-item-content">
-          <div class="db-item-q">${i+1}. ${item.qHtml || escHtml(item.q)}</div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
-            <div class="db-item-a" id="ans-${i}" style="filter:blur(4px); user-select:none; transition:filter 0.3s;">${item.aHtml || escHtml(item.a)}</div>
-            <button onclick="toggleAns(${i})" id="ans-btn-${i}" style="font-size:11px; padding:3px 10px; border:1px solid var(--border); border-radius:6px; background:transparent; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif; white-space:nowrap;">👁️ দেখুন</button>
-          </div>
-        </div>
-        <button class="btn-danger" onclick="deleteQA(${i})">মুছুন</button>
-      </div>`;
+      const isEn = currentLang === 'en';
+      const dateTime = item.date ? '<div style="font-size:10px; color:#7a6e5a; text-align:right; margin-top:4px;">🕐 ' + item.date + ' ' + item.time + '</div>' : '';
+      const qText = item.qHtml || escHtml(item.q);
+      const aText = item.aHtml || escHtml(item.a);
+      return '<div class="db-item">' +
+        '<div class="db-item-content">' +
+          '<div id="view-' + i + '">' +
+            '<div class="db-item-q">' + (i+1) + '. ' + qText + '</div>' +
+            '<div style="display:flex; align-items:center; gap:8px; margin-top:5px;">' +
+              '<div class="db-item-a" id="ans-' + i + '" style="filter:blur(4px); user-select:none; transition:filter 0.3s;">' + aText + '</div>' +
+              '<button onclick="toggleAns(' + i + ')" id="ans-btn-' + i + '" style="font-size:11px; padding:3px 10px; border:1px solid #ddd5c0; border-radius:6px; background:transparent; cursor:pointer; color:#7a6e5a; font-family:\'Hind Siliguri\',sans-serif; white-space:nowrap;">👁️ ' + (isEn ? 'Show' : 'দেখুন') + '</button>' +
+            '</div>' +
+            dateTime +
+          '</div>' +
+          '<div id="edit-' + i + '" style="display:none; margin-top:6px;">' +
+            '<input type="text" id="eq-' + i + '" value="' + escHtml(item.q) + '" style="margin-bottom:6px; font-size:14px; width:100%;" />' +
+            '<input type="text" id="ea-' + i + '" value="' + escHtml(item.a) + '" style="margin-bottom:8px; font-size:14px; width:100%;" />' +
+            '<div style="display:flex; gap:8px;">' +
+              '<button onclick="saveEdit(' + i + ')" style="padding:6px 14px; background:#1a1408; color:#f5f0e8; border:none; border-radius:7px; font-family:\'Hind Siliguri\',sans-serif; font-size:13px; font-weight:700; cursor:pointer;">' + (isEn ? '✅ Save' : '✅ সেভ') + '</button>' +
+              '<button onclick="cancelEdit(' + i + ')" style="padding:6px 14px; background:transparent; border:1.5px solid #ddd5c0; border-radius:7px; font-family:\'Hind Siliguri\',sans-serif; font-size:13px; cursor:pointer; color:#7a6e5a;">' + (isEn ? 'Cancel' : 'বাতিল') + '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex; flex-direction:column; gap:6px;">' +
+          '<button onclick="startEdit(' + i + ')" id="edit-btn-' + i + '" style="padding:5px 12px; background:transparent; border:1.5px solid #ddd5c0; border-radius:6px; font-size:12px; cursor:pointer; color:#7a6e5a; font-family:\'Hind Siliguri\',sans-serif;">' + (isEn ? '✏️ Edit' : '✏️ এডিট') + '</button>' +
+          '<button class="btn-danger" onclick="deleteQA(' + i + ')">' + (isEn ? 'Delete' : 'মুছুন') + '</button>' +
+        '</div>' +
+      '</div>';
     }).join('');
   }
 
@@ -1190,36 +1176,39 @@
         qHtml: highlight(item.q, q),
         aHtml: highlight(item.a, q)
       }));
-    countEl.textContent = `${results.length}টি ফলাফল পাওয়া গেছে`;
+    const isEn = currentLang === 'en';
+    countEl.textContent = isEn ? `${results.length} result(s) found` : `${results.length}টি ফলাফল পাওয়া গেছে`;
     renderDB(results);
   }
 
   function revealAns() {
+    const isEn = currentLang === 'en';
     const el = document.getElementById('blurAns');
     const btn = document.getElementById('revealBtn');
     if (!el) return;
     if (el.style.filter === 'none') {
       el.style.filter = 'blur(5px)';
       el.style.userSelect = 'none';
-      btn.textContent = '👁️ সঠিক উত্তর দেখুন';
+      btn.textContent = isEn ? '👁️ Show Answer' : '👁️ সঠিক উত্তর দেখুন';
     } else {
       el.style.filter = 'none';
       el.style.userSelect = 'text';
-      btn.textContent = '🙈 লুকান';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
     }
   }
 
   function toggleAns(i) {
+    const isEn = currentLang === 'en';
     const ans = document.getElementById(`ans-${i}`);
     const btn = document.getElementById(`ans-btn-${i}`);
     if (ans.style.filter === 'none') {
       ans.style.filter = 'blur(4px)';
       ans.style.userSelect = 'none';
-      btn.textContent = '👁️ দেখুন';
+      btn.textContent = isEn ? '👁️ Show' : '👁️ দেখুন';
     } else {
       ans.style.filter = 'none';
       ans.style.userSelect = 'text';
-      btn.textContent = '🙈 লুকান';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
     }
   }
 
@@ -1228,14 +1217,42 @@
   }
 
   async function addQA() {
+    const isEn = currentLang === 'en';
     const q = document.getElementById('newQuestion').value.trim();
     const a = document.getElementById('newAnswer').value.trim();
-    if (!q || !a) { alert('প্রশ্ন ও উত্তর দুটোই দিন!'); return; }
-    database.push({ q, a });
+    if (!q || !a) { alert(isEn ? 'Enter both question and answer!' : 'প্রশ্ন ও উত্তর দুটোই দিন!'); return; }
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    database.push({ q, a, date, time });
     document.getElementById('newQuestion').value = '';
     document.getElementById('newAnswer').value = '';
     renderDB();
     await saveDatabase();
+  }
+
+  function startEdit(i) {
+    document.getElementById(`view-${i}`).style.display = 'none';
+    document.getElementById(`edit-${i}`).style.display = 'block';
+    document.getElementById(`edit-btn-${i}`).style.display = 'none';
+    document.getElementById(`eq-${i}`).focus();
+  }
+
+  function cancelEdit(i) {
+    document.getElementById(`view-${i}`).style.display = 'block';
+    document.getElementById(`edit-${i}`).style.display = 'none';
+    document.getElementById(`edit-btn-${i}`).style.display = 'block';
+  }
+
+  async function saveEdit(i) {
+    const newQ = document.getElementById(`eq-${i}`).value.trim();
+    const newA = document.getElementById(`ea-${i}`).value.trim();
+    const isEn = currentLang === 'en';
+    if (!newQ || !newA) { alert(isEn ? 'Both fields required!' : 'দুটো ফিল্ড পূরণ করুন!'); return; }
+    database[i].q = newQ;
+    database[i].a = newA;
+    await saveDatabase();
+    renderDB();
   }
 
   function deleteQA(i) {
@@ -1279,26 +1296,6 @@
     try {
       await navigator.clipboard.writeText(text);
       btn.textContent = '✅ কপি হয়েছে!';
-      btn.style.borderColor = 'var(--correct)';
-      btn.style.color = 'var(--correct)';
-      setTimeout(() => {
-        btn.textContent = '📋 কপি করুন';
-        btn.style.borderColor = 'var(--border)';
-        btn.style.color = 'var(--text)';
-      }, 2000);
-    } catch(e) {
-      const ta = document.getElementById('exportText');
-      ta.focus(); ta.select(); ta.setSelectionRange(0, 99999);
-      btn.textContent = '☑️ সিলেক্ট হয়েছে — দীর্ঘ চাপ → কপি করুন';
-      setTimeout(() => { btn.textContent = '📋 কপি করুন'; }, 3000);
-    }
-  }
-
-  async function doCopyExport(btn) {
-    const text = document.getElementById('exportText').value;
-    try {
-      await navigator.clipboard.writeText(text);
-      btn.textContent = '✅ কপি হয়েছে!';
       btn.style.background = 'rgba(44,95,46,0.15)';
       btn.style.borderColor = 'var(--correct)';
       btn.style.color = 'var(--correct)';
@@ -1309,7 +1306,6 @@
         btn.style.color = 'var(--text)';
       }, 2000);
     } catch(e) {
-      // fallback: select all manually
       const ta = document.getElementById('exportText');
       ta.focus(); ta.select(); ta.setSelectionRange(0, 99999);
       btn.textContent = '☑️ সিলেক্ট হয়েছে — এখন দীর্ঘ চাপ → কপি';
@@ -1358,9 +1354,9 @@
         database = data;
         renderDB();
         await saveDatabase();
-        okEl.textContent = `✅ ${data.length}টি প্রশ্ন সফলভাবে import হয়েছে!`;
+        okEl.textContent = `✅ ${data.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` ;
         okEl.style.display = 'block';
-        showToast(`✅ ${data.length}টি প্রশ্ন import হয়েছে!`, 'green');
+        showToast(`✅ ${data.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` , 'green');
         setTimeout(() => closeImportModal(), 1500);
       } catch(e) {
         errEl.textContent = '❌ ফাইলটা সঠিক নয়। proshnomala-backup.json ফাইল দিন।';
@@ -1397,9 +1393,9 @@
       database = normalized;
       renderDB();
       await saveDatabase();
-      okEl.textContent = `✅ ${database.length}টি প্রশ্ন import হয়েছে!`;
+      okEl.textContent = `✅ ${database.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` ;
       okEl.style.display = 'block';
-      showToast(`✅ ${database.length}টি প্রশ্ন import হয়েছে!`, 'green');
+      showToast(`✅ ${database.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` , 'green');
       setTimeout(() => closeImportModal(), 1500);
     } catch(e) {
       const len = raw.length;
@@ -1447,7 +1443,8 @@
   // ─── Quiz Panel ──────────────────────────────────────────
   function populateSelect() {
     const sel = document.getElementById('questionSelect');
-    sel.innerHTML = '<option value="">-- প্রশ্ন বেছে নিন --</option>';
+    const isEn = currentLang === 'en';
+    sel.innerHTML = `<option value="">${isEn ? '-- Select a question --' : '-- প্রশ্ন বেছে নিন --'}</option>`;
     database.forEach((item, i) => {
       const opt = document.createElement('option');
       opt.value = i;
@@ -1460,20 +1457,24 @@
   function loadQuestion() {
     const idx = document.getElementById('questionSelect').value;
     if (idx === '') { document.getElementById('questionArea').style.display = 'none'; return; }
+    const isEn = currentLang === 'en';
     currentQIndex = parseInt(idx);
     document.getElementById('questionText').textContent = database[currentQIndex].q;
     document.getElementById('userAnswer').value = '';
+    document.getElementById('userAnswer').placeholder = isEn ? 'Write your answer here...' : 'এখানে উত্তর লিখুন...';
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'none';
     document.getElementById('evalError').style.display = 'none';
     document.getElementById('evalLoading').style.display = 'none';
     document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = isEn ? '🔍 Check Answer' : '🔍 উত্তর যাচাই করুন';
     document.getElementById('questionArea').style.display = 'block';
   }
 
   async function evaluateAnswer() {
+    const isEn = currentLang === 'en';
     const userAns = document.getElementById('userAnswer').value.trim();
-    if (!userAns) { alert('উত্তর লিখুন!'); return; }
+    if (!userAns) { alert(isEn ? 'Please write an answer!' : 'উত্তর লিখুন!'); return; }
     if (currentQIndex < 0) return;
 
     const question = database[currentQIndex].q;
@@ -1487,12 +1488,15 @@
     // ── Quick Exact Match (instant) ──────────────────────────
     const normalize = s => s.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[।,!?\.]/g, '');
     if (normalize(userAns) === normalize(correctAnswer)) {
-      showResult('✅ সঠিক! চমৎকার উত্তর দিয়েছেন।', 'correct', question, userAns, correctAnswer);
+      const msg = isEn ? '✅ Correct! Excellent answer.' : '✅ সঠিক! চমৎকার উত্তর দিয়েছেন।';
+      showResult(msg, 'correct', question, userAns, correctAnswer);
       return;
     }
 
-    // ── AI Evaluation (for non-exact answers) ────────────────
+    // ── AI Evaluation ────────────────────────────────────────
     document.getElementById('evalLoading').style.display = 'flex';
+    document.getElementById('evalLoading').querySelector('span').textContent =
+      isEn ? 'AI is evaluating...' : 'AI মূল্যায়ন করছে...';
 
     const prompt = `You are a strict QA evaluator. Compare the user's answer with the correct answer by meaning only.
 
@@ -1503,11 +1507,11 @@ User's Answer: ${userAns}
 Evaluation rules:
 - Ignore minor spelling or grammar differences
 - Check the meaning carefully
-- Respond in the SAME language as the user's answer (Bangla if Bangla, English if English)
+- Respond in ${isEn ? 'English' : 'the SAME language as the user\'s answer (Bangla if Bangla, English if English)'}
 - Respond in exactly ONE of these formats:
-  1. If correct: Start with exactly "✅ সঠিক!" (if Bangla) or "✅ Correct!" (if English), then optionally a short praise sentence.
-  2. If incorrect: Start with exactly "❌ ভুল।" (if Bangla) or "❌ Incorrect." (if English), then on a new line write "সঠিক উত্তর:" (if Bangla) or "The correct answer is:" (if English) followed by the correct answer.
-  3. If partially correct: Start with "⚠️ আংশিক সঠিক।" (if Bangla) or "⚠️ Partially correct." (if English), give a brief explanation, then the correct answer.
+  1. If correct: Start with exactly "✅ Correct!" then optionally a short praise sentence.
+  2. If incorrect: Start with exactly "❌ Incorrect." then on a new line write "The correct answer is:" followed by the correct answer.
+  3. If partially correct: Start with "⚠️ Partially correct." give a brief explanation, then the correct answer.
 - No extra commentary. Only the evaluation.`;
 
     try {
@@ -1530,7 +1534,8 @@ Evaluation rules:
       showResult(result, type, question, userAns, correctAnswer);
 
     } catch (err) {
-      document.getElementById('evalError').textContent = '❌ মূল্যায়নে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+      const isEn = currentLang === 'en';
+      document.getElementById('evalError').textContent = isEn ? '❌ Evaluation failed. Please try again.' : '❌ মূল্যায়নে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
       document.getElementById('evalError').style.display = 'block';
       document.getElementById('submitBtn').disabled = false;
     } finally {
@@ -1539,12 +1544,13 @@ Evaluation rules:
   }
 
   function showResult(result, type, question, userAns, correctAnswer) {
+    const isEn = currentLang === 'en';
     let displayResult = result.replace(/\n/g, '<br>');
     if (type === 'incorrect' || type === 'partial') {
       displayResult = displayResult.replace(
         /(সঠিক উত্তর:|The correct answer is:)(.*)/,
         `$1 <span id="blurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;display:inline;">$2</span>
-         <br><button onclick="revealAns()" id="revealBtn" style="margin-top:8px;padding:6px 16px;border:1.5px solid var(--border);border-radius:8px;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:600;color:var(--muted);">👁️ সঠিক উত্তর দেখুন</button>`
+         <br><button onclick="revealAns()" id="revealBtn" style="margin-top:8px;padding:6px 16px;border:1.5px solid var(--border);border-radius:8px;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:600;color:var(--muted);">👁️ ${isEn ? 'Show Answer' : 'সঠিক উত্তর দেখুন'}</button>`
       );
     }
     const card = document.getElementById('resultCard');
@@ -1557,20 +1563,25 @@ Evaluation rules:
     else if (type === 'incorrect') stats.incorrect++;
     updateStats();
     history.unshift({ question, userAns, correctAnswer, result, type, time: new Date().toLocaleTimeString('bn-BD') });
-    document.getElementById('nextBtn').style.display = 'block';
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = isEn ? 'Next Question →' : 'পরবর্তী প্রশ্ন →';
+    nextBtn.style.display = 'block';
     document.getElementById('submitBtn').disabled = false;
   }
 
   function nextQuestion() {
+    const isEn = currentLang === 'en';
     const next = (currentQIndex + 1) % database.length;
     document.getElementById('questionSelect').value = next;
     currentQIndex = next;
     document.getElementById('questionText').textContent = database[currentQIndex].q;
     document.getElementById('userAnswer').value = '';
+    document.getElementById('userAnswer').placeholder = isEn ? 'Write your answer here...' : 'এখানে উত্তর লিখুন...';
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'none';
     document.getElementById('evalError').style.display = 'none';
     document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = isEn ? '🔍 Check Answer' : '🔍 উত্তর যাচাই করুন';
   }
 
   function updateStats() {
@@ -1582,7 +1593,7 @@ Evaluation rules:
   function renderHistory() {
     const list = document.getElementById('historyList');
     if (history.length === 0) {
-      list.innerHTML = '<div class="empty-state">📭 এখনো কোনো মূল্যায়ন হয়নি।</div>';
+      list.innerHTML = '';
       return;
     }
     list.innerHTML = history.map(h => `
@@ -1609,8 +1620,9 @@ Evaluation rules:
     document.getElementById('practiceArea').style.display = 'none';
     document.getElementById('practiceSummary').style.display = 'none';
     const list = document.getElementById('practiceCheckList');
+    const isEn = currentLang === 'en';
     if (database.length === 0) {
-      list.innerHTML = '<div class="empty-state">📭 ডেটাবেজে কোনো প্রশ্ন নেই।</div>';
+      list.innerHTML = '<div class="empty-state">📭 ' + (isEn ? 'No questions in database.' : 'ডেটাবেজে কোনো প্রশ্ন নেই।') + '</div>';
       return;
     }
     list.innerHTML = database.map((item, i) => `
@@ -1622,11 +1634,12 @@ Evaluation rules:
   }
 
   function selectAllPractice() {
+    const isEn = currentLang === 'en';
     const all = document.querySelectorAll('.practice-chk');
     const allChecked = [...all].every(c => c.checked);
     all.forEach(c => c.checked = !allChecked);
     const btn = document.querySelector('[onclick="selectAllPractice()"]');
-    if (btn) btn.textContent = allChecked ? 'সব সিলেক্ট' : 'সব বাদ';
+    if (btn) btn.textContent = allChecked ? (isEn ? 'Select All' : 'সব সিলেক্ট') : (isEn ? 'Deselect All' : 'সব বাদ');
   }
 
   function deselectAllPractice() {
@@ -1635,7 +1648,7 @@ Evaluation rules:
 
   function startPractice() {
     const checked = [...document.querySelectorAll('.practice-chk:checked')].map(c => parseInt(c.value));
-    if (checked.length === 0) { alert('অন্তত একটি প্রশ্ন সিলেক্ট করুন!'); return; }
+    if (checked.length === 0) { alert(currentLang === 'en' ? 'Select at least one question!' : 'অন্তত একটি প্রশ্ন সিলেক্ট করুন!'); return; }
     practiceQueue = checked.map(i => ({ ...database[i], origIndex: i }));
     if (document.getElementById('randomOrder').checked) {
       practiceQueue.sort(() => Math.random() - 0.5);
@@ -1651,7 +1664,6 @@ Evaluation rules:
 
   function loadPracticeQ() {
     const q = practiceQueue[practiceIndex];
-    document.getElementById('practiceQNum').textContent = `${practiceIndex + 1} / ${practiceTotal}`;
     document.getElementById('practiceQText').textContent = q.q;
     document.getElementById('practiceAnswer').value = '';
     document.getElementById('practiceResult').style.display = 'none';
@@ -1659,26 +1671,34 @@ Evaluation rules:
     document.getElementById('practiceStopBtn').style.display = 'none';
     document.getElementById('practiceSubmitBtn').disabled = false;
     document.getElementById('practiceAnswer').focus();
-    // Update progress
+    const isEn = currentLang === 'en';
+    document.getElementById('practiceQLabel').innerHTML = (isEn ? 'Question ' : 'প্রশ্ন ') + '<span id="practiceQNum">' + (practiceIndex + 1) + ' / ' + practiceTotal + '</span>';
+    document.getElementById('practiceAnsLabel').textContent = isEn ? 'Your Answer' : 'আপনার উত্তর';
     const pct = (practiceIndex / practiceTotal) * 100;
     document.getElementById('practiceBar').style.width = pct + '%';
-    document.getElementById('practiceProgressText').textContent = `${practiceIndex} / ${practiceTotal} সম্পন্ন`;
-    document.getElementById('practiceScore').textContent = `✅ ${practiceCorrect} সঠিক`;
+    document.getElementById('practiceProgressText').textContent = practiceIndex + ' / ' + practiceTotal + (isEn ? ' done' : ' সম্পন্ন');
+    document.getElementById('practiceScore').textContent = '✅ ' + practiceCorrect + (isEn ? ' correct' : ' সঠিক');
+    document.getElementById('practiceSubmitBtn').textContent = isEn ? '🔍 Check' : '🔍 যাচাই করুন';
+    document.getElementById('practiceAnswer').placeholder = isEn ? 'Write your answer...' : 'এখানে উত্তর লিখুন...';
+    document.getElementById('practiceNextBtn').querySelector('span').innerHTML = isEn ? '→ Next Question' : 'পরবর্তী প্রশ্ন →';
+    document.getElementById('practiceStopBtn').querySelector('span').innerHTML = isEn ? '✕ Stop' : 'বন্ধ করুন';
   }
 
   async function submitPracticeAnswer() {
+    const isEn = currentLang === 'en';
     const userAns = document.getElementById('practiceAnswer').value.trim();
-    if (!userAns) { alert('উত্তর লিখুন!'); return; }
+    if (!userAns) { alert(isEn ? 'Write an answer!' : 'উত্তর লিখুন!'); return; }
     const q = practiceQueue[practiceIndex];
     document.getElementById('practiceSubmitBtn').disabled = true;
     document.getElementById('practiceLoading').style.display = 'flex';
+    document.getElementById('practiceLoading').querySelector('span').textContent = isEn ? 'AI is evaluating...' : 'AI মূল্যায়ন করছে...';
     document.getElementById('practiceResult').style.display = 'none';
 
     const normalize = s => s.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[।,!?\.]/g, '');
     if (normalize(userAns) === normalize(q.a)) {
       practiceCorrect++;
       document.getElementById('practiceLoading').style.display = 'none';
-      showPracticeResult('✅ সঠিক! চমৎকার!', 'correct');
+      showPracticeResult(isEn ? '✅ Correct! Excellent!' : '✅ সঠিক! চমৎকার!', 'correct');
       return;
     }
 
@@ -1688,11 +1708,11 @@ Correct Answer: ${q.a}
 User's Answer: ${userAns}
 Evaluation rules:
 - Ignore minor spelling or grammar differences
-- Respond in the SAME language as the user's answer
+- Respond in ${isEn ? 'English only' : 'the SAME language as the user answer'}
 - Respond in exactly ONE of these formats:
-  1. If correct: "✅ সঠিক!" or "✅ Correct!"
-  2. If incorrect: "❌ ভুল।\nসঠিক উত্তর: ${q.a}" or "❌ Incorrect.\nThe correct answer is: ${q.a}"
-  3. If partial: "⚠️ আংশিক সঠিক।" or "⚠️ Partially correct." with brief note then correct answer
+  1. If correct: "✅ Correct!"
+  2. If incorrect: "❌ Incorrect.\nThe correct answer is: ${q.a}"
+  3. If partial: "⚠️ Partially correct." with brief note then correct answer
 - No extra commentary.`;
 
     try {
@@ -1712,21 +1732,24 @@ Evaluation rules:
       else if (result.startsWith('⚠️')) type = 'partial';
       showPracticeResult(result, type);
     } catch(e) {
-      showPracticeResult('❌ সমস্যা হয়েছে। পরবর্তী প্রশ্নে যান।', 'incorrect');
+      const isEn = currentLang === 'en';
+      showPracticeResult(isEn ? '❌ Error. Go to next question.' : '❌ সমস্যা হয়েছে। পরবর্তী প্রশ্নে যান।', 'incorrect');
     }
   }
 
   function showPracticeResult(result, type) {
+    const isEn = currentLang === 'en';
     document.getElementById('practiceLoading').style.display = 'none';
     const q = practiceQueue[practiceIndex];
     let display = result.replace(/\n/g, '<br>');
     if (type === 'incorrect' || type === 'partial') {
+      const showTxt = isEn ? '👁️ Show' : '👁️ দেখুন';
       let replaced = display.replace(
         /(সঠিক উত্তর:|The correct answer is:)(.*)/,
-        `$1 <span id="pBlurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;">$2</span><br><button onclick="revealPAns()" id="pRevealBtn" style="margin-top:8px;padding:5px 14px;border:1.5px solid var(--border);border-radius:7px;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:12px;font-weight:600;color:var(--muted);">👁️ দেখুন</button>`
+        '$1 <span id="pBlurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;">$2</span><br><button onclick="revealPAns()" id="pRevealBtn" style="margin-top:8px;padding:5px 14px;border:1.5px solid #ddd5c0;border-radius:7px;background:transparent;cursor:pointer;font-family:\'Hind Siliguri\',sans-serif;font-size:12px;font-weight:600;color:#7a6e5a;">' + showTxt + '</button>'
       );
       if (replaced === display) {
-        replaced += `<br><br>সঠিক উত্তর: <span id="pBlurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;">${escHtml(q.a)}</span><br><button onclick="revealPAns()" id="pRevealBtn" style="margin-top:8px;padding:5px 14px;border:1.5px solid var(--border);border-radius:7px;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:12px;font-weight:600;color:var(--muted);">👁️ দেখুন</button>`;
+        replaced += '<br><br>' + (isEn ? 'Correct answer:' : 'সঠিক উত্তর:') + ' <span id="pBlurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;">' + escHtml(q.a) + '</span><br><button onclick="revealPAns()" id="pRevealBtn" style="margin-top:8px;padding:5px 14px;border:1.5px solid #ddd5c0;border-radius:7px;background:transparent;cursor:pointer;font-family:\'Hind Siliguri\',sans-serif;font-size:12px;font-weight:600;color:#7a6e5a;">' + showTxt + '</button>';
       }
       display = replaced;
     }
@@ -1734,28 +1757,31 @@ Evaluation rules:
     card.className = 'result-card ' + type;
     document.getElementById('practiceResultText').innerHTML = display;
     card.style.display = 'block';
-    // Update progress score
-    document.getElementById('practiceScore').textContent = `✅ ${practiceCorrect} সঠিক`;
+    document.getElementById('practiceScore').textContent = '✅ ' + practiceCorrect + (isEn ? ' correct' : ' সঠিক');
     document.getElementById('practiceNextBtn').style.display = 'block';
     document.getElementById('practiceStopBtn').style.display = 'block';
   }
 
   function revealPAns() {
+    const isEn = currentLang === 'en';
     const el = document.getElementById('pBlurAns');
     const btn = document.getElementById('pRevealBtn');
     if (!el) return;
     if (el.style.filter === 'none') {
-      el.style.filter = 'blur(5px)'; el.style.userSelect = 'none'; btn.textContent = '👁️ দেখুন';
+      el.style.filter = 'blur(5px)'; el.style.userSelect = 'none';
+      btn.textContent = isEn ? '👁️ Show' : '👁️ দেখুন';
     } else {
-      el.style.filter = 'none'; el.style.userSelect = 'text'; btn.textContent = '🙈 লুকান';
+      el.style.filter = 'none'; el.style.userSelect = 'text';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
     }
   }
 
   function nextPracticeQ() {
+    const isEn = currentLang === 'en';
     practiceIndex++;
     const pct = (practiceIndex / practiceTotal) * 100;
     document.getElementById('practiceBar').style.width = pct + '%';
-    document.getElementById('practiceProgressText').textContent = `${practiceIndex} / ${practiceTotal} সম্পন্ন`;
+    document.getElementById('practiceProgressText').textContent = practiceIndex + ' / ' + practiceTotal + (isEn ? ' done' : ' সম্পন্ন');
     if (practiceIndex >= practiceTotal) {
       showPracticeSummary();
     } else {
@@ -1764,11 +1790,15 @@ Evaluation rules:
   }
 
   function showPracticeSummary() {
+    const isEn = currentLang === 'en';
     document.getElementById('practiceArea').style.display = 'none';
     document.getElementById('practiceSummary').style.display = 'block';
     const pct = Math.round((practiceCorrect / practiceTotal) * 100);
-    document.getElementById('summaryText').innerHTML =
-      `মোট প্রশ্ন: <b>${practiceTotal}</b> &nbsp;|&nbsp; সঠিক: <b style="color:var(--correct)">${practiceCorrect}</b> &nbsp;|&nbsp; ভুল: <b style="color:var(--incorrect)">${practiceTotal - practiceCorrect}</b><br><br>স্কোর: <b style="font-size:22px;">${pct}%</b>`;
+    document.querySelector('#practiceSummary .q-text').textContent = isEn ? 'Practice Complete!' : 'প্র্যাকটিস শেষ!';
+    document.querySelector('#practiceSummary .btn-primary').textContent = isEn ? '🔄 Start Again' : '🔄 আবার শুরু করুন';
+    document.getElementById('summaryText').innerHTML = isEn
+      ? 'Total: <b>' + practiceTotal + '</b> &nbsp;|&nbsp; Correct: <b style="color:#2c5f2e">' + practiceCorrect + '</b> &nbsp;|&nbsp; Wrong: <b style="color:#c0392b">' + (practiceTotal - practiceCorrect) + '</b><br><br>Score: <b style="font-size:22px;">' + pct + '%</b>'
+      : 'মোট প্রশ্ন: <b>' + practiceTotal + '</b> &nbsp;|&nbsp; সঠিক: <b style="color:#2c5f2e">' + practiceCorrect + '</b> &nbsp;|&nbsp; ভুল: <b style="color:#c0392b">' + (practiceTotal - practiceCorrect) + '</b><br><br>স্কোর: <b style="font-size:22px;">' + pct + '%</b>';
   }
 
   function stopPractice() { showPracticeSummary(); }
@@ -1780,14 +1810,15 @@ Evaluation rules:
 
   // ─── Main Search ──────────────────────────────────────────
   function doMainSearch() {
+    const isEn = currentLang === 'en';
     const q = document.getElementById('mainSearch').value.trim().toLowerCase();
     const countEl = document.getElementById('mainSearchCount');
     const resultsEl = document.getElementById('mainSearchResults');
 
     if (!q) {
-      countEl.textContent = `মোট প্রশ্ন: ${database.length}টি`;
+      countEl.textContent = isEn ? `Total: ${database.length} questions` : `মোট প্রশ্ন: ${database.length}টি`;
       resultsEl.innerHTML = database.length === 0
-        ? '<div class="empty-state">📭 ডেটাবেজে কোনো প্রশ্ন নেই।</div>'
+        ? '<div class="empty-state">📭 ' + (isEn ? 'No questions yet.' : 'ডেটাবেজে কোনো প্রশ্ন নেই।') + '</div>'
         : database.map((item, i) => buildSearchCard(item, i, '')).join('');
       return;
     }
@@ -1803,11 +1834,11 @@ Evaluation rules:
       .filter(item => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q));
 
     countEl.textContent = results.length > 0
-      ? `🔍 "${q}" — ${results.length}টি ফলাফল`
-      : `🔍 "${q}" — কোনো ফলাফল নেই`;
+      ? `🔍 "${q}" — ${results.length} ${isEn ? 'result(s)' : 'টি ফলাফল'}`
+      : `🔍 "${q}" — ${isEn ? 'No results' : 'কোনো ফলাফল নেই'}`;
 
     if (results.length === 0) {
-      resultsEl.innerHTML = '<div class="empty-state">😕 কিছু পাওয়া যায়নি। অন্য কিছু লিখুন।</div>';
+      resultsEl.innerHTML = '<div class="empty-state">😕 ' + (isEn ? 'Nothing found. Try something else.' : 'কিছু পাওয়া যায়নি। অন্য কিছু লিখুন।') + '</div>';
       return;
     }
 
@@ -1815,6 +1846,7 @@ Evaluation rules:
   }
 
   function buildSearchCard(item, i, q, highlight) {
+    const isEn = currentLang === 'en';
     const qText = q && highlight ? highlight(item.q, q) : escHtml(item.q);
     const aText = q && highlight ? highlight(item.a, q) : escHtml(item.a);
     return `
@@ -1824,20 +1856,23 @@ Evaluation rules:
           <div id="srch-ans-${i}" style="filter:blur(4px); user-select:none; transition:filter 0.3s; font-size:14px; color:var(--correct); flex:1;">✓ ${aText}</div>
           <button onclick="toggleSrchAns(${i})" id="srch-btn-${i}"
             style="font-size:11px; padding:3px 10px; border:1px solid var(--border); border-radius:6px; background:transparent; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif; white-space:nowrap; flex-shrink:0;">
-            👁️ দেখুন
+            👁️ ${isEn ? 'Show' : 'দেখুন'}
           </button>
         </div>
       </div>`;
   }
 
   function toggleSrchAns(i) {
+    const isEn = currentLang === 'en';
     const el = document.getElementById(`srch-ans-${i}`);
     const btn = document.getElementById(`srch-btn-${i}`);
     if (!el) return;
     if (el.style.filter === 'none') {
-      el.style.filter = 'blur(4px)'; el.style.userSelect = 'none'; btn.textContent = '👁️ দেখুন';
+      el.style.filter = 'blur(4px)'; el.style.userSelect = 'none';
+      btn.textContent = isEn ? '👁️ Show' : '👁️ দেখুন';
     } else {
-      el.style.filter = 'none'; el.style.userSelect = 'text'; btn.textContent = '🙈 লুকান';
+      el.style.filter = 'none'; el.style.userSelect = 'text';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
     }
   }
 
@@ -1875,44 +1910,57 @@ Evaluation rules:
   }
 
   function renderNotes(filtered = null) {
+    const isEn = currentLang === 'en';
     const list = document.getElementById('notesList');
     if (!list) return;
     const items = filtered !== null ? filtered : notes;
     if (notes.length === 0) {
-      list.innerHTML = '<div class="empty-state">📭 কোনো নোট নেই। উপরে "নতুন নোট" বাটনে ক্লিক করুন।</div>';
+      list.innerHTML = `<div class="empty-state">📭 ${isEn ? 'No notes yet. Click "New Note" above.' : 'কোনো নোট নেই। উপরে "নতুন নোট" বাটনে ক্লিক করুন।'}</div>`;
       return;
     }
     if (items.length === 0) {
-      list.innerHTML = '<div class="empty-state">🔍 কোনো নোট পাওয়া যায়নি।</div>';
+      list.innerHTML = `<div class="empty-state">🔍 ${isEn ? 'No notes found.' : 'কোনো নোট পাওয়া যায়নি।'}</div>`;
       return;
     }
     list.innerHTML = items.map((note) => `
       <div class="db-item" style="flex-direction:column; align-items:stretch; gap:10px;" id="note-card-${note.id}">
         <div style="display:flex; align-items:center; gap:10px;">
-          <input type="text" value="${escHtml(note.title)}" placeholder="নোটের শিরোনাম..."
+          <input type="text" value="${escHtml(note.title)}" placeholder="${isEn ? 'Note title...' : 'নোটের শিরোনাম...'}"
             style="flex:1; font-weight:600; font-size:15px; border:none; border-bottom:1.5px solid var(--border); border-radius:0; background:transparent; padding:4px 2px; outline:none;"
             oninput="updateNoteTitle(${note.id}, this.value)" />
-          <button class="btn-danger" onclick="deleteNote(${note.id})">মুছুন</button>
+          <button class="btn-danger" onclick="deleteNote(${note.id})">${isEn ? 'Delete' : 'মুছুন'}</button>
         </div>
-        <textarea rows="5" placeholder="এখানে লিখুন..."
+        <textarea rows="5" placeholder="${isEn ? 'Write here...' : 'এখানে লিখুন...'}"
           style="font-size:14px; line-height:1.8; margin-bottom:0;"
           oninput="updateNoteText(${note.id}, this.value)"
           id="note-text-${note.id}">${escHtml(note.text)}</textarea>
-        <div style="text-align:right; font-size:11px; color:var(--muted);" id="note-saved-${note.id}"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:11px; color:var(--muted);" id="note-saved-${note.id}"></div>
+          ${note.date ? '<div style="font-size:10px; color:var(--muted);">🕐 ' + note.date + ' ' + note.time + '</div>' : ''}
+        </div>
       </div>
     `).join('');
   }
 
   function addNewNote() {
+    const isEn = currentLang === 'en';
     const id = Date.now();
-    notes.unshift({ id, title: `নোট ${notes.length + 1}`, text: '', ts: id });
+    const num = notes.length + 1;
+    const title = isEn ? `Note ${num}` : `নোট ${toBanglaNum(num)}`;
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    notes.unshift({ id, title, text: '', ts: id, date, time });
     renderNotes();
     saveNotes();
-    // focus new note textarea
     setTimeout(() => {
       const el = document.getElementById(`note-text-${id}`);
       if (el) el.focus();
     }, 100);
+  }
+
+  function toBanglaNum(n) {
+    return String(n).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
   }
 
   function updateNoteTitle(id, val) {
@@ -1928,9 +1976,13 @@ Evaluation rules:
   function scheduleSave(id) {
     clearTimeout(noteTimers[id]);
     noteTimers[id] = setTimeout(async () => {
+      const isEn = currentLang === 'en';
       await saveNotes();
       const msg = document.getElementById(`note-saved-${id}`);
-      if (msg) { msg.textContent = '✓ সেভ হয়েছে'; setTimeout(() => { msg.textContent = ''; }, 1800); }
+      if (msg) {
+        msg.textContent = isEn ? '✓ Saved' : '✓ সেভ হয়েছে';
+        setTimeout(() => { msg.textContent = ''; }, 1800);
+      }
     }, 600);
   }
 
@@ -1941,24 +1993,85 @@ Evaluation rules:
   }
 
   function searchNotes() {
+    const isEn = currentLang === 'en';
     const q = document.getElementById('noteSearch').value.trim().toLowerCase();
     const countEl = document.getElementById('noteSearchCount');
-    if (!q) {
-      countEl.textContent = '';
-      renderNotes();
-      return;
-    }
+    if (!q) { countEl.textContent = ''; renderNotes(); return; }
     const results = notes.filter(n =>
       n.title.toLowerCase().includes(q) || n.text.toLowerCase().includes(q)
     );
     countEl.textContent = results.length > 0
-      ? `🔍 "${q}" — ${results.length}টি নোট পাওয়া গেছে`
-      : `🔍 "${q}" — কোনো নোট পাওয়া যায়নি`;
+      ? `🔍 "${q}" — ${results.length}${isEn ? ' note(s) found' : 'টি নোট পাওয়া গেছে'}`
+      : `🔍 "${q}" — ${isEn ? 'No notes found' : 'কোনো নোট পাওয়া যায়নি'}`;
     renderNotes(results);
   }
 
+  // ─── Hijri Date ───────────────────────────────────────────
+  function showHijriDate() {
+    try {
+      const hijri = new Intl.DateTimeFormat('en-u-ca-islamic', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      }).format(new Date());
+      document.getElementById('hijriDate').textContent = '🌙 ' + hijri;
+    } catch(e) {
+      // fallback manual calculation
+      const now = new Date();
+      const jd = Math.floor((now.getTime() / 86400000) + 2440587.5);
+      const l = jd - 1948440 + 10632;
+      const n = Math.floor((l - 1) / 10631);
+      const ll = l - 10631 * n + 354;
+      const j = Math.floor((10985 - ll) / 5316) * Math.floor((50 * ll) / 17719) +
+                Math.floor(ll / 5670) * Math.floor((43 * ll) / 15238);
+      const lll = ll - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) -
+                  Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+      const month = Math.floor((24 * lll) / 709);
+      const day = lll - Math.floor((709 * month) / 24);
+      const year = 30 * n + j - 30;
+      const months = ['Muharram','Safar','Rabi I','Rabi II','Jumada I','Jumada II',
+                      'Rajab','Sha\'ban','Ramadan','Shawwal','Dhul Qa\'dah','Dhul Hijjah'];
+      document.getElementById('hijriDate').textContent = `🌙 ${day} ${months[month-1]} ${year}`;
+    }
+  }
+
+  // ─── Language Toggle ──────────────────────────────────────
+  let currentLang = 'bn';
+
+  function toggleLang() {
+    currentLang = currentLang === 'bn' ? 'en' : 'bn';
+    applyLang();
+    localStorage.setItem('proshnomala_lang', currentLang);
+  }
+
+  function applyLang() {
+    const isEn = currentLang === 'en';
+    const btn = document.getElementById('langBtn');
+    if (btn) btn.textContent = isEn ? 'বাং' : 'EN';
+
+    // Update all elements with data-bn / data-en
+    document.querySelectorAll('[data-bn]').forEach(el => {
+      el.textContent = isEn ? el.dataset.en : el.dataset.bn;
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-placeholder-bn]').forEach(el => {
+      el.placeholder = isEn ? el.dataset.placeholderEn : el.dataset.placeholderBn;
+    });
+
+    // Update page title
+    document.title = 'Learn Arabic — Made by Imran';
+
+    // Re-render dynamic content
+    renderDB();
+    populateSelect();
+    renderNotes();
+    renderHistory();
+  }
+
   // ─── Init ─────────────────────────────────────────────────
+  currentLang = localStorage.getItem('proshnomala_lang') || 'bn';
   loadDatabase();
+  showHijriDate();
+  setTimeout(() => applyLang(), 300);
 </script>
 </body>
 </html>
