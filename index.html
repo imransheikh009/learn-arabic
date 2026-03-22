@@ -1050,11 +1050,10 @@
 
 </main>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+<!-- Firebase SDK (compat version) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
+<script defer>
   const firebaseConfig = {
     apiKey: "AIzaSyBph5jOFdvhI3A5p27CcFIJFJv5BWGNV6g",
     authDomain: "learn-arabic-5afd2.firebaseapp.com",
@@ -1065,43 +1064,35 @@
     appId: "1:617342283643:web:101e43e38f89b143f017de"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  firebase.initializeApp(firebaseConfig);
+  const fbDb = firebase.database();
 
-  // Firebase save
   window.firebaseSaveDB = async function(data) {
-    try {
-      await set(ref(db, 'database'), data);
-    } catch(e) { console.log('Firebase save error:', e); }
+    try { await fbDb.ref('database').set(data); } catch(e) { console.log('FB save error:', e); }
   };
 
-  // Firebase save notes
   window.firebaseSaveNotes = async function(data) {
-    try {
-      await set(ref(db, 'notes'), data);
-    } catch(e) { console.log('Firebase save notes error:', e); }
+    try { await fbDb.ref('notes').set(data); } catch(e) { console.log('FB notes save error:', e); }
   };
 
-  // Firebase load
   window.firebaseLoadDB = async function() {
     try {
-      const snap = await get(ref(db, 'database'));
+      const snap = await fbDb.ref('database').get();
       if (snap.exists()) return snap.val();
-    } catch(e) { console.log('Firebase load error:', e); }
+    } catch(e) { console.log('FB load error:', e); }
     return null;
   };
 
-  // Firebase load notes
   window.firebaseLoadNotes = async function() {
     try {
-      const snap = await get(ref(db, 'notes'));
+      const snap = await fbDb.ref('notes').get();
       if (snap.exists()) return snap.val();
-    } catch(e) { console.log('Firebase load notes error:', e); }
+    } catch(e) { console.log('FB notes load error:', e); }
     return null;
   };
 
-  // Real-time listener for DB changes
-  onValue(ref(db, 'database'), (snap) => {
+  // Real-time sync
+  fbDb.ref('database').on('value', (snap) => {
     if (snap.exists() && window._firebaseReady) {
       const newData = snap.val();
       if (JSON.stringify(newData) !== JSON.stringify(window._currentDB)) {
@@ -1109,12 +1100,12 @@
         window.database = newData;
         if (window.renderDB) window.renderDB();
         if (window.populateSelect) window.populateSelect();
+        if (window.initPracticeSetup) window.initPracticeSetup();
       }
     }
   });
 
-  // Real-time listener for notes changes
-  onValue(ref(db, 'notes'), (snap) => {
+  fbDb.ref('notes').on('value', (snap) => {
     if (snap.exists() && window._firebaseReady) {
       const newData = snap.val();
       if (JSON.stringify(newData) !== JSON.stringify(window._currentNotes)) {
@@ -1126,10 +1117,10 @@
   });
 
   window._firebaseReady = false;
-  console.log('✅ Firebase connected!');
+  console.log('✅ Firebase compat connected!');
 </script>
 
-<script>
+<script defer>
   // ─── State ───────────────────────────────────────────────
   const DEFAULT_DB = [
     { q: "মানুষ কোথা থেকে সৃষ্টি হয়েছে?", a: "শুকনো শব্দকারী মাটি থেকে" },
@@ -2187,6 +2178,13 @@ Evaluation rules:
 
   // ─── Init ─────────────────────────────────────────────────
   currentLang = localStorage.getItem('proshnomala_lang') || 'bn';
+  // Expose to window for Firebase real-time sync
+  window.renderDB = renderDB;
+  window.renderNotes = renderNotes;
+  window.populateSelect = populateSelect;
+  window.initPracticeSetup = initPracticeSetup;
+  window.database = database;
+  window.notes = notes;
   loadDatabase();
   showHijriDate();
   setTimeout(() => applyLang(), 300);
