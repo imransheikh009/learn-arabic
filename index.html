@@ -27,37 +27,32 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'Hind Siliguri', sans-serif;
-    min-height: 100vh;
-    background-image: 
-      radial-gradient(ellipse at 20% 20%, rgba(192,57,43,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 80%, rgba(44,95,46,0.05) 0%, transparent 60%);
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
+  /* TOP HEADER */
   header {
     background: var(--text);
     color: var(--bg);
-    padding: 4px 12px;
+    padding: 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
     z-index: 100;
     border-bottom: 1px solid var(--gold);
-    min-height: 32px;
+    flex-shrink: 0;
+    height: 44px;
   }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
+  .logo { display: flex; align-items: center; gap: 5px; }
   .logo-icon { display: none; }
 
   .logo-text h1 {
     font-family: 'Crimson Pro', serif;
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 0.5px;
     color: var(--gold);
     font-weight: 600;
@@ -70,76 +65,68 @@
     text-transform: uppercase;
   }
 
-  .stats-bar {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-
+  .stats-bar { display: flex; gap: 8px; align-items: center; }
   .stat { text-align: center; }
-
-  .stat-num {
-    font-size: 11px;
-    font-weight: 700;
-    font-family: 'Crimson Pro', serif;
-    line-height: 1;
-  }
-
+  .stat-num { font-size: 11px; font-weight: 700; font-family: 'Crimson Pro', serif; line-height: 1; }
   .stat-num.green { color: #6fcf72; }
   .stat-num.red { color: #f08080; }
   .stat-num.gold { color: var(--gold); }
+  .stat-label { font-size: 6px; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(245,240,232,0.4); }
 
-  .stat-label {
-    font-size: 6px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: rgba(245,240,232,0.4);
-  }
-
+  /* MAIN CONTENT AREA */
   main {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 36px 24px 80px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 16px 16px;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* TABS */
+  /* BOTTOM NAVIGATION */
   .tabs {
     display: flex;
     gap: 0;
-    margin-bottom: 28px;
-    border: 2px solid var(--text);
-    border-radius: 10px;
-    overflow: hidden;
-    animation: fadeUp 0.5s ease both;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    border-top: 1.5px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    height: 60px;
+    z-index: 100;
   }
 
   .tab {
     flex: 1;
-    padding: 12px;
+    padding: 6px 4px;
     text-align: center;
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 9px;
     background: var(--surface);
     color: var(--muted);
     transition: all 0.2s;
     border: none;
     font-family: 'Hind Siliguri', sans-serif;
-    letter-spacing: 0.3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-right: none;
   }
 
-  .tab:not(:last-child) { border-right: 2px solid var(--text); }
-  .tab.active { background: var(--text); color: var(--bg); }
+  .tab .tab-icon { font-size: 18px; line-height: 1; }
+  .tab .tab-label { font-size: 9px; line-height: 1; }
+  .tab.active { color: var(--gold); background: var(--surface); }
+  .tab.active .tab-icon { transform: translateY(-2px); }
   .tab:hover:not(.active) { background: var(--surface2); }
 
   /* PANELS */
-  .panel { display: none; animation: fadeUp 0.4s ease both; }
+  .panel { display: none; animation: fadeUp 0.3s ease both; }
   .panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* DATABASE PANEL */
   .section-title {
@@ -829,13 +816,6 @@
 <div class="save-indicator" id="saveIndicator">✓ সেভ হয়েছে</div>
 
 <main>
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('db')" data-bn="🗄️ ডেটাবেজ" data-en="🗄️ Database">🗄️ ডেটাবেজ</button>
-    <button class="tab" onclick="switchTab('quiz')" data-bn="✍️ পরীক্ষা দাও" data-en="✍️ Quiz">✍️ পরীক্ষা দাও</button>
-    <button class="tab" onclick="switchTab('practice')" data-bn="🔁 প্র্যাকটিস" data-en="🔁 Practice">🔁 প্র্যাকটিস</button>
-    <button class="tab" onclick="switchTab('search')" data-bn="🔍 খুঁজুন" data-en="🔍 Search">🔍 খুঁজুন</button>
-    <button class="tab" onclick="switchTab('history')" data-bn="📝 নোটস" data-en="📝 Notes">📝 নোটস</button>
-  </div>
 
   <!-- DATABASE PANEL -->
   <div class="panel active" id="panel-db">
@@ -1050,6 +1030,30 @@
 
 </main>
 
+<!-- Bottom Navigation -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('db')">
+    <span class="tab-icon">🗄️</span>
+    <span class="tab-label" data-bn="ডেটাবেজ" data-en="Database">ডেটাবেজ</span>
+  </button>
+  <button class="tab" onclick="switchTab('quiz')">
+    <span class="tab-icon">✍️</span>
+    <span class="tab-label" data-bn="পরীক্ষা" data-en="Quiz">পরীক্ষা</span>
+  </button>
+  <button class="tab" onclick="switchTab('practice')">
+    <span class="tab-icon">🔁</span>
+    <span class="tab-label" data-bn="প্র্যাকটিস" data-en="Practice">প্র্যাকটিস</span>
+  </button>
+  <button class="tab" onclick="switchTab('search')">
+    <span class="tab-icon">🔍</span>
+    <span class="tab-label" data-bn="খুঁজুন" data-en="Search">খুঁজুন</span>
+  </button>
+  <button class="tab" onclick="switchTab('history')">
+    <span class="tab-icon">📝</span>
+    <span class="tab-label" data-bn="নোটস" data-en="Notes">নোটস</span>
+  </button>
+</div>
+
 <!-- Firebase Dynamic Loader -->
 <script>
   window._firebaseReady = false;
@@ -1216,7 +1220,10 @@
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    event.target.classList.add('active');
+    // Find the tab button with matching onclick
+    document.querySelectorAll('.tab').forEach(t => {
+      if (t.getAttribute('onclick') === `switchTab('${tab}')`) t.classList.add('active');
+    });
     document.getElementById('panel-' + tab).classList.add('active');
     if (tab === 'db') renderDB();
     if (tab === 'quiz') populateSelect();
@@ -1224,6 +1231,8 @@
     if (tab === 'search') { document.getElementById('mainSearch').focus(); doMainSearch(); }
     if (tab === 'history') renderHistory();
     if (tab === 'history') loadNote();
+    // Scroll to top
+    document.querySelector('main').scrollTop = 0;
   }
 
   // ─── Database Panel ──────────────────────────────────────
