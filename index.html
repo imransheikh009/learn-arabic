@@ -1050,77 +1050,98 @@
 
 </main>
 
-<!-- Firebase SDK (compat version) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
-<script defer>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBph5jOFdvhI3A5p27CcFIJFJv5BWGNV6g",
-    authDomain: "learn-arabic-5afd2.firebaseapp.com",
-    databaseURL: "https://learn-arabic-5afd2-default-rtdb.firebaseio.com",
-    projectId: "learn-arabic-5afd2",
-    storageBucket: "learn-arabic-5afd2.firebasestorage.app",
-    messagingSenderId: "617342283643",
-    appId: "1:617342283643:web:101e43e38f89b143f017de"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const fbDb = firebase.database();
-
-  window.firebaseSaveDB = async function(data) {
-    try { await fbDb.ref('database').set(data); } catch(e) { console.log('FB save error:', e); }
-  };
-
-  window.firebaseSaveNotes = async function(data) {
-    try { await fbDb.ref('notes').set(data); } catch(e) { console.log('FB notes save error:', e); }
-  };
-
-  window.firebaseLoadDB = async function() {
-    try {
-      const snap = await fbDb.ref('database').get();
-      if (snap.exists()) return snap.val();
-    } catch(e) { console.log('FB load error:', e); }
-    return null;
-  };
-
-  window.firebaseLoadNotes = async function() {
-    try {
-      const snap = await fbDb.ref('notes').get();
-      if (snap.exists()) return snap.val();
-    } catch(e) { console.log('FB notes load error:', e); }
-    return null;
-  };
-
-  // Real-time sync
-  fbDb.ref('database').on('value', (snap) => {
-    if (snap.exists() && window._firebaseReady) {
-      const newData = snap.val();
-      if (JSON.stringify(newData) !== JSON.stringify(window._currentDB)) {
-        window._currentDB = newData;
-        window.database = newData;
-        if (window.renderDB) window.renderDB();
-        if (window.populateSelect) window.populateSelect();
-        if (window.initPracticeSetup) window.initPracticeSetup();
-      }
-    }
-  });
-
-  fbDb.ref('notes').on('value', (snap) => {
-    if (snap.exists() && window._firebaseReady) {
-      const newData = snap.val();
-      if (JSON.stringify(newData) !== JSON.stringify(window._currentNotes)) {
-        window._currentNotes = newData;
-        window.notes = newData;
-        if (window.renderNotes) window.renderNotes();
-      }
-    }
-  });
-
+<!-- Firebase Dynamic Loader -->
+<script>
   window._firebaseReady = false;
-  console.log('✅ Firebase compat connected!');
+  window._currentDB = null;
+  window._currentNotes = null;
+
+  function initFirebase() {
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBph5jOFdvhI3A5p27CcFIJFJv5BWGNV6g",
+        authDomain: "learn-arabic-5afd2.firebaseapp.com",
+        databaseURL: "https://learn-arabic-5afd2-default-rtdb.firebaseio.com",
+        projectId: "learn-arabic-5afd2",
+        storageBucket: "learn-arabic-5afd2.firebasestorage.app",
+        messagingSenderId: "617342283643",
+        appId: "1:617342283643:web:101e43e38f89b143f017de"
+      };
+
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const fbDb = firebase.database();
+
+      window.firebaseSaveDB = async function(data) {
+        try { await fbDb.ref('database').set(data); console.log('✅ Saved to Firebase'); }
+        catch(e) { console.log('FB save error:', e); }
+      };
+
+      window.firebaseSaveNotes = async function(data) {
+        try { await fbDb.ref('notes').set(data); }
+        catch(e) { console.log('FB notes save error:', e); }
+      };
+
+      window.firebaseLoadDB = async function() {
+        try {
+          const snap = await fbDb.ref('database').get();
+          if (snap.exists()) return snap.val();
+        } catch(e) { console.log('FB load error:', e); }
+        return null;
+      };
+
+      window.firebaseLoadNotes = async function() {
+        try {
+          const snap = await fbDb.ref('notes').get();
+          if (snap.exists()) return snap.val();
+        } catch(e) {}
+        return null;
+      };
+
+      fbDb.ref('database').on('value', (snap) => {
+        if (snap.exists() && window._firebaseReady) {
+          const d = snap.val();
+          if (JSON.stringify(d) !== JSON.stringify(window._currentDB)) {
+            window._currentDB = d;
+            window.database = d;
+            if (window.renderDB) window.renderDB();
+            if (window.populateSelect) window.populateSelect();
+          }
+        }
+      });
+
+      fbDb.ref('notes').on('value', (snap) => {
+        if (snap.exists() && window._firebaseReady) {
+          const d = snap.val();
+          if (JSON.stringify(d) !== JSON.stringify(window._currentNotes)) {
+            window._currentNotes = d;
+            window.notes = d;
+            if (window.renderNotes) window.renderNotes();
+          }
+        }
+      });
+
+      console.log('✅ Firebase connected!');
+      if (window.loadDatabase) window.loadDatabase();
+
+    } catch(e) { console.log('Firebase init error:', e); }
+  }
+
+  // Load Firebase scripts dynamically
+  function loadScript(src, cb) {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  loadScript('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js', function() {
+    loadScript('https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js', function() {
+      initFirebase();
+    });
+  });
 </script>
 
-<script defer>
+<script>
   // ─── State ───────────────────────────────────────────────
   const DEFAULT_DB = [
     { q: "মানুষ কোথা থেকে সৃষ্টি হয়েছে?", a: "শুকনো শব্দকারী মাটি থেকে" },
@@ -2178,11 +2199,11 @@ Evaluation rules:
 
   // ─── Init ─────────────────────────────────────────────────
   currentLang = localStorage.getItem('proshnomala_lang') || 'bn';
-  // Expose to window for Firebase real-time sync
   window.renderDB = renderDB;
   window.renderNotes = renderNotes;
   window.populateSelect = populateSelect;
   window.initPracticeSetup = initPracticeSetup;
+  window.loadDatabase = loadDatabase;
   window.database = database;
   window.notes = notes;
   loadDatabase();
