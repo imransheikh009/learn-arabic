@@ -732,6 +732,10 @@
   </div>
   <div class="stats-bar">
     <div id="hijriDate" style="font-size:10px; color:rgba(245,240,232,0.7); letter-spacing:0.3px;"></div>
+    <button onclick="syncNow()" style="
+      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25);
+      color:var(--bg); border-radius:6px; padding:4px 8px; font-size:12px;
+      cursor:pointer; transition:all 0.2s;" title="Sync">🔄</button>
     <button id="langBtn" onclick="toggleLang()" style="
       background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25);
       color:var(--bg); border-radius:6px; padding:4px 10px; font-size:12px;
@@ -1235,7 +1239,37 @@
     document.querySelector('main').scrollTop = 0;
   }
 
-  // ─── Database Panel ──────────────────────────────────────
+  // ─── Sync ────────────────────────────────────────────────
+  async function syncNow() {
+    const btn = document.querySelector('[onclick="syncNow()"]');
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+    try {
+      if (window.firebaseLoadDB) {
+        const data = await window.firebaseLoadDB();
+        if (data && Array.isArray(data)) {
+          database = data;
+          window._currentDB = data;
+          window.database = data;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+          renderDB();
+          populateSelect();
+        }
+      }
+      if (window.firebaseLoadNotes) {
+        const ndata = await window.firebaseLoadNotes();
+        if (ndata && Array.isArray(ndata)) {
+          notes = ndata;
+          window._currentNotes = ndata;
+          window.notes = ndata;
+          renderNotes();
+        }
+      }
+      showToast('✅ Sync হয়েছে!', 'green');
+    } catch(e) {
+      showToast('❌ Sync হয়নি', 'red');
+    }
+    if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+  }
   function renderDB(filtered = null) {
     const list = document.getElementById('dbList');
     const items = filtered !== null ? filtered : database.map((item, i) => ({ ...item, origIndex: i }));
