@@ -1050,6 +1050,85 @@
 
 </main>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBph5jOFdvhI3A5p27CcFIJFJv5BWGNV6g",
+    authDomain: "learn-arabic-5afd2.firebaseapp.com",
+    databaseURL: "https://learn-arabic-5afd2-default-rtdb.firebaseio.com",
+    projectId: "learn-arabic-5afd2",
+    storageBucket: "learn-arabic-5afd2.firebasestorage.app",
+    messagingSenderId: "617342283643",
+    appId: "1:617342283643:web:101e43e38f89b143f017de"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Firebase save
+  window.firebaseSaveDB = async function(data) {
+    try {
+      await set(ref(db, 'database'), data);
+    } catch(e) { console.log('Firebase save error:', e); }
+  };
+
+  // Firebase save notes
+  window.firebaseSaveNotes = async function(data) {
+    try {
+      await set(ref(db, 'notes'), data);
+    } catch(e) { console.log('Firebase save notes error:', e); }
+  };
+
+  // Firebase load
+  window.firebaseLoadDB = async function() {
+    try {
+      const snap = await get(ref(db, 'database'));
+      if (snap.exists()) return snap.val();
+    } catch(e) { console.log('Firebase load error:', e); }
+    return null;
+  };
+
+  // Firebase load notes
+  window.firebaseLoadNotes = async function() {
+    try {
+      const snap = await get(ref(db, 'notes'));
+      if (snap.exists()) return snap.val();
+    } catch(e) { console.log('Firebase load notes error:', e); }
+    return null;
+  };
+
+  // Real-time listener for DB changes
+  onValue(ref(db, 'database'), (snap) => {
+    if (snap.exists() && window._firebaseReady) {
+      const newData = snap.val();
+      if (JSON.stringify(newData) !== JSON.stringify(window._currentDB)) {
+        window._currentDB = newData;
+        window.database = newData;
+        if (window.renderDB) window.renderDB();
+        if (window.populateSelect) window.populateSelect();
+      }
+    }
+  });
+
+  // Real-time listener for notes changes
+  onValue(ref(db, 'notes'), (snap) => {
+    if (snap.exists() && window._firebaseReady) {
+      const newData = snap.val();
+      if (JSON.stringify(newData) !== JSON.stringify(window._currentNotes)) {
+        window._currentNotes = newData;
+        window.notes = newData;
+        if (window.renderNotes) window.renderNotes();
+      }
+    }
+  });
+
+  window._firebaseReady = false;
+  console.log('✅ Firebase connected!');
+</script>
+
 <script>
   // ─── State ───────────────────────────────────────────────
   const DEFAULT_DB = [
@@ -1063,22 +1142,44 @@
   let currentQIndex = -1;
   let pendingDeleteIndex = -1;
 
-  // ─── Persistent Storage (claude.ai + local device দুটোতেই কাজ করে) ──
+  // ─── Persistent Storage (Firebase + localStorage fallback) ──
   const STORAGE_KEY = 'proshnomala_qa_database';
 
   async function saveDatabase() {
     const json = JSON.stringify(database);
     try { localStorage.setItem(STORAGE_KEY, json); } catch(e) {}
     try { await window.storage.set(STORAGE_KEY, json); } catch(e) {}
+    // Firebase save
+    if (window.firebaseSaveDB) {
+      window._currentDB = database;
+      await window.firebaseSaveDB(database);
+    }
     showSaveIndicator();
   }
 
   async function loadDatabase() {
     let loaded = false;
-    try {
-      const result = await window.storage.get(STORAGE_KEY);
-      if (result && result.value) { database = JSON.parse(result.value); loaded = true; }
-    } catch(e) {}
+
+    // Try Firebase first
+    if (window.firebaseLoadDB) {
+      try {
+        const data = await window.firebaseLoadDB();
+        if (data && Array.isArray(data) && data.length > 0) {
+          database = data;
+          window._currentDB = data;
+          loaded = true;
+          showToast('✅ Firebase থেকে data load হয়েছে!', 'green');
+        }
+      } catch(e) {}
+    }
+
+    // Fallback to localStorage
+    if (!loaded) {
+      try {
+        const result = await window.storage.get(STORAGE_KEY);
+        if (result && result.value) { database = JSON.parse(result.value); loaded = true; }
+      } catch(e) {}
+    }
     if (!loaded) {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -1086,6 +1187,9 @@
       } catch(e) {}
     }
     if (!loaded) { database = [...DEFAULT_DB]; await saveDatabase(); }
+
+    window._firebaseReady = true;
+    window.database = database;
     renderDB();
   }
 
@@ -1885,27 +1989,41 @@ Evaluation rules:
     const json = JSON.stringify(notes);
     try { localStorage.setItem(NOTES_KEY, json); } catch(e) {}
     try { await window.storage.set(NOTES_KEY, json); } catch(e) {}
+    // Firebase save
+    if (window.firebaseSaveNotes) {
+      window._currentNotes = notes;
+      await window.firebaseSaveNotes(notes);
+    }
   }
 
   async function loadNote() {
     let loaded = false;
-    try {
-      const r = await window.storage.get(NOTES_KEY);
-      if (r && r.value) { notes = JSON.parse(r.value); loaded = true; }
-    } catch(e) {}
+
+    // Try Firebase first
+    if (window.firebaseLoadNotes) {
+      try {
+        const data = await window.firebaseLoadNotes();
+        if (data && Array.isArray(data) && data.length > 0) {
+          notes = data;
+          window._currentNotes = data;
+          loaded = true;
+        }
+      } catch(e) {}
+    }
+
+    if (!loaded) {
+      try {
+        const r = await window.storage.get(NOTES_KEY);
+        if (r && r.value) { notes = JSON.parse(r.value); loaded = true; }
+      } catch(e) {}
+    }
     if (!loaded) {
       try {
         const raw = localStorage.getItem(NOTES_KEY);
         if (raw) { notes = JSON.parse(raw); loaded = true; }
       } catch(e) {}
     }
-    // migrate old single note
-    if (!loaded) {
-      try {
-        const old = localStorage.getItem('proshnomala_note');
-        if (old) notes = [{ id: Date.now(), title: 'নোট ১', text: old, ts: Date.now() }];
-      } catch(e) {}
-    }
+    window.notes = notes;
     renderNotes();
   }
 
