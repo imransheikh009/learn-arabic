@@ -816,6 +816,21 @@
   </div>
 </div>
 
+<!-- Surah Add Modal -->
+<div class="modal-overlay" id="addSurahModal">
+  <div class="modal-box" style="text-align:left;">
+    <div class="modal-title" style="margin-bottom:14px;">📖 নতুন সূরা যোগ করুন</div>
+    <label>সূরার নাম (বাংলা)</label>
+    <input type="text" id="newSurahName" placeholder="যেমন: আল-ফাতিহা, আল-বাকারা..." style="margin-bottom:6px;" />
+    <label style="margin-top:4px;">সূরার নাম (আরবি) — ঐচ্ছিক</label>
+    <input type="text" id="newSurahArabic" placeholder="যেমন: الفاتحة" style="direction:rtl; font-size:18px;" />
+    <div class="modal-btns" style="margin-top:16px;">
+      <button class="modal-cancel" onclick="closeAddSurahModal()">বাতিল</button>
+      <button class="modal-confirm" style="background:var(--gold); border-color:var(--gold);" onclick="addSurah()">✚ যোগ করুন</button>
+    </div>
+  </div>
+</div>
+
 <!-- Save Indicator -->
 <div class="save-indicator" id="saveIndicator">✓ সেভ হয়েছে</div>
 
@@ -1012,6 +1027,56 @@
     <div id="mainSearchResults"></div>
   </div>
 
+  <!-- SURAH PANEL -->
+  <div class="panel" id="panel-surah">
+
+    <!-- Surah List View -->
+    <div id="surah-list-view">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div class="section-title" style="margin-bottom:0;">📖 সূরাসমূহ</div>
+        <button class="btn-primary" onclick="openAddSurahModal()">✚ নতুন সূরা</button>
+      </div>
+      <div id="surahGrid" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <!-- Surah Detail View -->
+    <div id="surah-detail-view" style="display:none;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <button onclick="closeSurahDetail()" style="
+          padding:7px 14px; background:transparent; border:1.5px solid var(--border);
+          border-radius:8px; font-size:13px; cursor:pointer; color:var(--muted);
+          font-family:'Hind Siliguri',sans-serif; font-weight:600;">
+          ← ফিরে যান
+        </button>
+        <div style="flex:1;">
+          <div id="surahDetailName" style="font-family:'Crimson Pro',serif; font-size:22px; font-weight:600; color:var(--text);"></div>
+          <div id="surahDetailCount" style="font-size:12px; color:var(--muted);"></div>
+        </div>
+        <button onclick="openAddQAToSurah()" style="
+          padding:7px 14px; background:var(--text); color:var(--bg); border:none;
+          border-radius:8px; font-size:13px; cursor:pointer; font-family:'Hind Siliguri',sans-serif; font-weight:600;">
+          ✚ প্রশ্ন যোগ
+        </button>
+      </div>
+
+      <!-- Add QA form (hidden by default) -->
+      <div id="surahAddQAForm" style="display:none; background:var(--surface); border:2px solid var(--border); border-radius:12px; padding:18px; margin-bottom:18px;">
+        <h3 style="font-size:12px; font-weight:700; color:var(--gold); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:14px;">➕ নতুন প্রশ্ন যোগ করুন</h3>
+        <label>প্রশ্ন</label>
+        <input type="text" id="surahNewQ" placeholder="প্রশ্ন লিখুন..." />
+        <label>সঠিক উত্তর</label>
+        <input type="text" id="surahNewA" placeholder="সঠিক উত্তর লিখুন..." />
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary" onclick="addQAToSurah()">✚ যোগ করুন</button>
+          <button onclick="document.getElementById('surahAddQAForm').style.display='none'" style="padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:14px; cursor:pointer; color:var(--muted);">বাতিল</button>
+        </div>
+      </div>
+
+      <!-- QA list for this surah -->
+      <div id="surahQAList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+
   <!-- HISTORY PANEL -->
   <div class="panel" id="panel-history">
     <div id="historyList"></div>
@@ -1040,6 +1105,10 @@
     <span class="tab-icon">🗄️</span>
     <span class="tab-label" data-bn="ডেটাবেজ" data-en="Database">ডেটাবেজ</span>
   </button>
+  <button class="tab" onclick="switchTab('surah')">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label" data-bn="সূরা" data-en="Surah">সূরা</span>
+  </button>
   <button class="tab" onclick="switchTab('quiz')">
     <span class="tab-icon">✍️</span>
     <span class="tab-label" data-bn="পরীক্ষা" data-en="Quiz">পরীক্ষা</span>
@@ -1063,6 +1132,7 @@
   window._firebaseReady = false;
   window._currentDB = null;
   window._currentNotes = null;
+  window._currentSurahs = null;
 
   function initFirebase() {
     try {
@@ -1124,6 +1194,33 @@
             window._currentNotes = d;
             window.notes = d;
             if (window.renderNotes) window.renderNotes();
+          }
+        }
+      });
+
+      window.firebaseSaveSurahs = async function(data) {
+        try { await fbDb.ref('surahs').set(data); }
+        catch(e) { console.log('FB surahs save error:', e); }
+      };
+
+      window.firebaseLoadSurahs = async function() {
+        try {
+          const snap = await fbDb.ref('surahs').get();
+          if (snap.exists()) return snap.val();
+        } catch(e) {}
+        return null;
+      };
+
+      fbDb.ref('surahs').on('value', (snap) => {
+        if (snap.exists() && window._firebaseReady) {
+          const d = snap.val();
+          if (JSON.stringify(d) !== JSON.stringify(window._currentSurahs)) {
+            window._currentSurahs = d;
+            window.surahs = d;
+            surahs = d;
+            if (window.renderSurahList && document.getElementById('panel-surah').classList.contains('active')) {
+              window.renderSurahList();
+            }
           }
         }
       });
@@ -1229,6 +1326,7 @@
       if (t.getAttribute('onclick') === `switchTab('${tab}')`) t.classList.add('active');
     });
     document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'surah') renderSurahList();
     if (tab === 'db') renderDB();
     if (tab === 'quiz') populateSelect();
     if (tab === 'practice') initPracticeSetup();
@@ -1440,8 +1538,9 @@
 
   // ─── Export / Import ─────────────────────────────────────
   async function exportDB() {
-    if (database.length === 0) { showToast('❌ ডেটাবেজ খালি!', 'red'); return; }
-    const json = JSON.stringify(database, null, 2);
+    if (database.length === 0 && notes.length === 0) { showToast('❌ ডেটাবেজ খালি!', 'red'); return; }
+    const backup = { database, notes, surahs };
+    const json = JSON.stringify(backup, null, 2);
     document.getElementById('exportText').value = json;
     document.getElementById('exportModal').classList.add('show');
     setTimeout(() => {
@@ -1473,7 +1572,8 @@
   }
 
   function doDownloadJSON() {
-    const json = JSON.stringify(database, null, 2);
+    const backup = { database, notes, surahs };
+    const json = JSON.stringify(backup, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1507,15 +1607,46 @@
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const data = JSON.parse(e.target.result);
+        const parsed = JSON.parse(e.target.result);
+        let data, notesData;
+
+        // New format: { database: [...], notes: [...] }
+        if (parsed && !Array.isArray(parsed) && parsed.database) {
+          data = parsed.database;
+          notesData = parsed.notes || [];
+        } else if (Array.isArray(parsed)) {
+          // Old format: just array of QA
+          data = parsed;
+          notesData = null;
+        } else throw new Error();
+
         if (!Array.isArray(data) || data.length === 0) throw new Error();
         if (!data.every(d => d.q !== undefined && d.a !== undefined)) throw new Error();
+
         database = data;
         renderDB();
         await saveDatabase();
-        okEl.textContent = `✅ ${data.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` ;
+
+        if (notesData && Array.isArray(notesData)) {
+          notes = notesData;
+          window.notes = notes;
+          window._currentNotes = notes;
+          renderNotes();
+          await saveNotes();
+        }
+
+        if (parsed.surahs && Array.isArray(parsed.surahs)) {
+          surahs = parsed.surahs;
+          window.surahs = surahs;
+          window._currentSurahs = surahs;
+          await saveSurahs();
+        }
+
+        const notesMsg = (notesData && notesData.length > 0) ? ` + ${notesData.length} নোট` : '';
+        const surahMsg = (parsed.surahs && parsed.surahs.length > 0) ? ` + ${parsed.surahs.length} সূরা` : '';
+        okEl.textContent = `✅ ${data.length} টি প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`;
         okEl.style.display = 'block';
-        showToast(`✅ ${data.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` , 'green');
+        showToast(`✅ ${data.length} প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`, 'green');
         setTimeout(() => closeImportModal(), 1500);
       } catch(e) {
         errEl.textContent = '❌ ফাইলটা সঠিক নয়। proshnomala-backup.json ফাইল দিন।';
@@ -1538,23 +1669,54 @@
     }
 
     raw = raw.trim().replace(/^\uFEFF/, '');
-    const arrMatch = raw.match(/(\[[\s\S]*\])/);
-    if (arrMatch) raw = arrMatch[1];
+    // Only extract array if the raw text is NOT a full JSON object
+    if (!raw.startsWith('{')) {
+      const arrMatch = raw.match(/(\[[\s\S]*\])/);
+      if (arrMatch) raw = arrMatch[1];
+    }
 
     try {
-      const data = JSON.parse(raw);
-      if (!Array.isArray(data)) throw new Error('not array');
-      const normalized = data.map(d => {
-        if (d.q !== undefined && d.a !== undefined) return d;
-        if (d.question !== undefined && d.answer !== undefined) return { q: d.question, a: d.answer };
-        throw new Error('bad format');
-      });
-      database = normalized;
+      const parsed = JSON.parse(raw);
+      let data, notesData;
+
+      // New format: { database: [...], notes: [...] }
+      if (parsed && !Array.isArray(parsed) && parsed.database) {
+        data = parsed.database;
+        notesData = parsed.notes || [];
+      } else if (Array.isArray(parsed)) {
+        data = parsed.map(d => {
+          if (d.q !== undefined && d.a !== undefined) return d;
+          if (d.question !== undefined && d.answer !== undefined) return { q: d.question, a: d.answer };
+          throw new Error('bad format');
+        });
+        notesData = null;
+      } else throw new Error('not array or object');
+
+      database = data;
+      window.database = data;
       renderDB();
       await saveDatabase();
-      okEl.textContent = `✅ ${database.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` ;
+
+      if (notesData && Array.isArray(notesData)) {
+        notes = notesData;
+        window.notes = notes;
+        window._currentNotes = notes;
+        renderNotes();
+        await saveNotes();
+      }
+
+      if (parsed && parsed.surahs && Array.isArray(parsed.surahs)) {
+        surahs = parsed.surahs;
+        window.surahs = surahs;
+        window._currentSurahs = surahs;
+        await saveSurahs();
+      }
+
+      const notesMsg = (notesData && notesData.length > 0) ? ` + ${notesData.length} নোট` : '';
+      const surahMsg = (parsed && parsed.surahs && parsed.surahs.length > 0) ? ` + ${parsed.surahs.length} সূরা` : '';
+      okEl.textContent = `✅ ${database.length} টি প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`;
       okEl.style.display = 'block';
-      showToast(`✅ ${database.length} ${currentLang === "en" ? "questions imported!" : "টি প্রশ্ন import হয়েছে!"}` , 'green');
+      showToast(`✅ ${database.length} প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`, 'green');
       setTimeout(() => closeImportModal(), 1500);
     } catch(e) {
       const len = raw.length;
@@ -2240,16 +2402,257 @@ Evaluation rules:
     renderHistory();
   }
 
+  // ─── Surah System ─────────────────────────────────────────
+  const SURAH_KEY = 'proshnomala_surahs';
+  let surahs = []; // [{ id, name, arabic, date, time, qaList: [{q,a,date,time}] }]
+  let activeSurahId = null;
+
+  async function saveSurahs() {
+    const json = JSON.stringify(surahs);
+    try { localStorage.setItem(SURAH_KEY, json); } catch(e) {}
+    try { await window.storage.set(SURAH_KEY, json); } catch(e) {}
+    if (window.firebaseSaveSurahs) {
+      window._currentSurahs = surahs;
+      await window.firebaseSaveSurahs(surahs);
+    }
+    showSaveIndicator();
+  }
+
+  async function loadSurahs() {
+    let loaded = false;
+    if (window.firebaseLoadSurahs) {
+      try {
+        const data = await window.firebaseLoadSurahs();
+        if (data && Array.isArray(data)) { surahs = data; window._currentSurahs = data; loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) {
+      try {
+        const r = await window.storage.get(SURAH_KEY);
+        if (r && r.value) { surahs = JSON.parse(r.value); loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) {
+      try {
+        const raw = localStorage.getItem(SURAH_KEY);
+        if (raw) { surahs = JSON.parse(raw); loaded = true; }
+      } catch(e) {}
+    }
+    window.surahs = surahs;
+  }
+
+  function renderSurahList() {
+    document.getElementById('surah-list-view').style.display = 'block';
+    document.getElementById('surah-detail-view').style.display = 'none';
+    const grid = document.getElementById('surahGrid');
+    if (surahs.length === 0) {
+      grid.innerHTML = '<div class="empty-state">📭 কোনো সূরা নেই। উপরে "নতুন সূরা" বাটনে ক্লিক করুন।</div>';
+      return;
+    }
+    grid.innerHTML = surahs.map((s, i) => `
+      <div style="
+        background:var(--surface); border:1.5px solid var(--border); border-radius:12px;
+        padding:16px 18px; display:flex; align-items:center; gap:14px; cursor:pointer;
+        transition:border-color 0.2s, box-shadow 0.2s; animation:fadeUp 0.3s ease both;"
+        onclick="openSurahDetail(${s.id})"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.boxShadow='0 4px 16px rgba(184,134,11,0.12)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        <div style="
+          width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--text),#3a3020);
+          color:var(--gold); font-family:'Crimson Pro',serif; font-size:16px; font-weight:700;
+          display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          ${i+1}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:16px; color:var(--text); margin-bottom:2px;">${escHtml(s.name)}</div>
+          ${s.arabic ? `<div style="font-size:18px; color:var(--gold); direction:rtl; text-align:left;">${escHtml(s.arabic)}</div>` : ''}
+          <div style="font-size:12px; color:var(--muted); margin-top:3px;">📝 ${s.qaList ? s.qaList.length : 0} টি প্রশ্ন</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;" onclick="event.stopPropagation()">
+          <button onclick="deleteSurah(${s.id})" class="btn-danger">মুছুন</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openSurahDetail(id) {
+    activeSurahId = id;
+    const s = surahs.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('surah-list-view').style.display = 'none';
+    document.getElementById('surah-detail-view').style.display = 'block';
+    document.getElementById('surahDetailName').textContent = s.name + (s.arabic ? ' — ' + s.arabic : '');
+    document.getElementById('surahAddQAForm').style.display = 'none';
+    renderSurahQAList(s);
+    document.querySelector('main').scrollTop = 0;
+  }
+
+  function renderSurahQAList(s) {
+    const list = document.getElementById('surahQAList');
+    const count = s.qaList ? s.qaList.length : 0;
+    document.getElementById('surahDetailCount').textContent = count + ' টি প্রশ্ন-উত্তর';
+    if (count === 0) {
+      list.innerHTML = '<div class="empty-state">📭 এই সূরায় এখনো কোনো প্রশ্ন নেই।<br>উপরে "✚ প্রশ্ন যোগ" করুন।</div>';
+      return;
+    }
+    list.innerHTML = s.qaList.map((item, i) => `
+      <div class="db-item" id="sq-${s.id}-${i}">
+        <div class="db-item-content">
+          <div id="sq-view-${s.id}-${i}">
+            <div class="db-item-q">${i+1}. ${escHtml(item.q)}</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
+              <div class="db-item-a" id="sq-ans-${s.id}-${i}" style="filter:blur(4px); user-select:none; transition:filter 0.3s;">${escHtml(item.a)}</div>
+              <button onclick="toggleSurahAns('${s.id}',${i})" id="sq-btn-${s.id}-${i}"
+                style="font-size:11px; padding:3px 10px; border:1px solid var(--border); border-radius:6px; background:transparent; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif; white-space:nowrap;">
+                👁️ দেখুন
+              </button>
+            </div>
+            ${item.date ? `<div style="font-size:10px; color:var(--muted); margin-top:4px; text-align:right;">🕐 ${item.date} ${item.time}</div>` : ''}
+          </div>
+          <div id="sq-edit-${s.id}-${i}" style="display:none; margin-top:6px;">
+            <input type="text" id="sq-eq-${s.id}-${i}" value="${escHtml(item.q)}" style="margin-bottom:6px; font-size:14px; width:100%;" />
+            <input type="text" id="sq-ea-${s.id}-${i}" value="${escHtml(item.a)}" style="margin-bottom:8px; font-size:14px; width:100%;" />
+            <div style="display:flex; gap:8px;">
+              <button onclick="saveSurahEdit('${s.id}',${i})" style="padding:6px 14px; background:var(--text); color:var(--bg); border:none; border-radius:7px; font-family:'Hind Siliguri',sans-serif; font-size:13px; font-weight:700; cursor:pointer;">✅ সেভ</button>
+              <button onclick="cancelSurahEdit('${s.id}',${i})" style="padding:6px 14px; background:transparent; border:1.5px solid var(--border); border-radius:7px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">বাতিল</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button onclick="startSurahEdit('${s.id}',${i})" id="sq-edit-btn-${s.id}-${i}" style="padding:5px 12px; background:transparent; border:1.5px solid var(--border); border-radius:6px; font-size:12px; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif;">✏️ এডিট</button>
+          <button class="btn-danger" onclick="deleteSurahQA('${s.id}',${i})">মুছুন</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleSurahAns(sid, i) {
+    const el = document.getElementById(`sq-ans-${sid}-${i}`);
+    const btn = document.getElementById(`sq-btn-${sid}-${i}`);
+    if (!el) return;
+    if (el.style.filter === 'none') {
+      el.style.filter = 'blur(4px)'; el.style.userSelect = 'none';
+      btn.textContent = '👁️ দেখুন';
+    } else {
+      el.style.filter = 'none'; el.style.userSelect = 'text';
+      btn.textContent = '🙈 লুকান';
+    }
+  }
+
+  function startSurahEdit(sid, i) {
+    document.getElementById(`sq-view-${sid}-${i}`).style.display = 'none';
+    document.getElementById(`sq-edit-${sid}-${i}`).style.display = 'block';
+    document.getElementById(`sq-edit-btn-${sid}-${i}`).style.display = 'none';
+  }
+
+  function cancelSurahEdit(sid, i) {
+    document.getElementById(`sq-view-${sid}-${i}`).style.display = 'block';
+    document.getElementById(`sq-edit-${sid}-${i}`).style.display = 'none';
+    document.getElementById(`sq-edit-btn-${sid}-${i}`).style.display = 'block';
+  }
+
+  async function saveSurahEdit(sid, i) {
+    const s = surahs.find(x => x.id == sid);
+    if (!s) return;
+    const newQ = document.getElementById(`sq-eq-${sid}-${i}`).value.trim();
+    const newA = document.getElementById(`sq-ea-${sid}-${i}`).value.trim();
+    if (!newQ || !newA) { alert('দুটো ফিল্ড পূরণ করুন!'); return; }
+    s.qaList[i].q = newQ;
+    s.qaList[i].a = newA;
+    await saveSurahs();
+    renderSurahQAList(s);
+  }
+
+  async function deleteSurahQA(sid, i) {
+    const s = surahs.find(x => x.id == sid);
+    if (!s) return;
+    if (!confirm('এই প্রশ্নটি মুছে ফেলবেন?')) return;
+    s.qaList.splice(i, 1);
+    await saveSurahs();
+    renderSurahQAList(s);
+  }
+
+  function closeSurahDetail() {
+    activeSurahId = null;
+    renderSurahList();
+  }
+
+  function openAddQAToSurah() {
+    document.getElementById('surahAddQAForm').style.display = 'block';
+    document.getElementById('surahNewQ').focus();
+    document.querySelector('main').scrollTop = 0;
+  }
+
+  async function addQAToSurah() {
+    const q = document.getElementById('surahNewQ').value.trim();
+    const a = document.getElementById('surahNewA').value.trim();
+    if (!q || !a) { alert('প্রশ্ন ও উত্তর দুটোই দিন!'); return; }
+    const s = surahs.find(x => x.id === activeSurahId);
+    if (!s) return;
+    if (!s.qaList) s.qaList = [];
+    const now = new Date();
+    s.qaList.push({ q, a, date: now.toLocaleDateString('en-GB'), time: now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true }) });
+    document.getElementById('surahNewQ').value = '';
+    document.getElementById('surahNewA').value = '';
+    await saveSurahs();
+    renderSurahQAList(s);
+    document.getElementById('surahAddQAForm').style.display = 'none';
+  }
+
+  function openAddSurahModal() {
+    document.getElementById('newSurahName').value = '';
+    document.getElementById('newSurahArabic').value = '';
+    document.getElementById('addSurahModal').classList.add('show');
+    setTimeout(() => document.getElementById('newSurahName').focus(), 100);
+  }
+
+  function closeAddSurahModal() {
+    document.getElementById('addSurahModal').classList.remove('show');
+  }
+
+  async function addSurah() {
+    const name = document.getElementById('newSurahName').value.trim();
+    const arabic = document.getElementById('newSurahArabic').value.trim();
+    if (!name) { alert('সূরার নাম দিন!'); return; }
+    const now = new Date();
+    surahs.push({
+      id: Date.now(),
+      name, arabic,
+      date: now.toLocaleDateString('en-GB'),
+      time: now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true }),
+      qaList: []
+    });
+    closeAddSurahModal();
+    await saveSurahs();
+    renderSurahList();
+  }
+
+  async function deleteSurah(id) {
+    const s = surahs.find(x => x.id === id);
+    if (!s) return;
+    if (!confirm(`"${s.name}" সূরাটি এবং এর সকল প্রশ্ন মুছে ফেলবেন?`)) return;
+    surahs = surahs.filter(x => x.id !== id);
+    await saveSurahs();
+    renderSurahList();
+  }
+
+  document.getElementById('addSurahModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddSurahModal();
+  });
+
   // ─── Init ─────────────────────────────────────────────────
   currentLang = localStorage.getItem('proshnomala_lang') || 'bn';
   window.renderDB = renderDB;
   window.renderNotes = renderNotes;
+  window.renderSurahList = renderSurahList;
   window.populateSelect = populateSelect;
   window.initPracticeSetup = initPracticeSetup;
   window.loadDatabase = loadDatabase;
   window.database = database;
   window.notes = notes;
+  window.surahs = surahs;
   loadDatabase();
+  loadSurahs();
   showHijriDate();
   setTimeout(() => applyLang(), 300);
 </script>
