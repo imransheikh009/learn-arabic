@@ -1,0 +1,2660 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn Arabic — Made by Imran</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --surface: #fffdf7;
+    --surface2: #f0ebe0;
+    --border: #ddd5c0;
+    --accent: #c0392b;
+    --accent2: #2c5f2e;
+    --gold: #b8860b;
+    --text: #1a1408;
+    --muted: #7a6e5a;
+    --correct: #2c5f2e;
+    --incorrect: #c0392b;
+    --partial: #a0640a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Hind Siliguri', sans-serif;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP HEADER */
+  header {
+    background: var(--text);
+    color: var(--bg);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    border-bottom: 1px solid var(--gold);
+    flex-shrink: 0;
+    height: 44px;
+  }
+
+  .logo { display: flex; align-items: center; gap: 5px; }
+  .logo-icon { display: none; }
+
+  .logo-text h1 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .logo-text span {
+    font-size: 7px;
+    color: rgba(245,240,232,0.4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .stats-bar { display: flex; gap: 8px; align-items: center; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 11px; font-weight: 700; font-family: 'Crimson Pro', serif; line-height: 1; }
+  .stat-num.green { color: #6fcf72; }
+  .stat-num.red { color: #f08080; }
+  .stat-num.gold { color: var(--gold); }
+  .stat-label { font-size: 6px; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(245,240,232,0.4); }
+
+  /* MAIN CONTENT AREA */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 16px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* BOTTOM NAVIGATION */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-top: 1.5px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    height: 60px;
+    z-index: 100;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 6px 4px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 9px;
+    background: var(--surface);
+    color: var(--muted);
+    transition: all 0.2s;
+    border: none;
+    font-family: 'Hind Siliguri', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-right: none;
+  }
+
+  .tab .tab-icon { font-size: 18px; line-height: 1; }
+  .tab .tab-label { font-size: 9px; line-height: 1; }
+  .tab.active { color: var(--gold); background: var(--surface); }
+  .tab.active .tab-icon { transform: translateY(-2px); }
+  .tab:hover:not(.active) { background: var(--surface2); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeUp 0.3s ease both; }
+  .panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* DATABASE PANEL */
+  .section-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 26px;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .db-add-form {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 24px;
+  }
+
+  .db-add-form h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  input[type="text"], textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 14px;
+    resize: none;
+  }
+
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,134,11,0.12);
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover { background: var(--gold); }
+
+  .btn-danger {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Hind Siliguri', sans-serif;
+  }
+
+  .btn-danger:hover { border-color: var(--incorrect); color: var(--incorrect); }
+
+  .db-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .db-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .db-item-content { flex: 1; }
+
+  .db-item-q {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 5px;
+    color: var(--text);
+  }
+
+  .db-item-a {
+    font-size: 14px;
+    color: var(--correct);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .db-item-a::before {
+    content: '✓';
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  /* QUIZ PANEL */
+  .quiz-select {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .quiz-select label { margin-bottom: 8px; }
+
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  select:focus { border-color: var(--gold); }
+  select option { background: var(--bg); }
+
+  .question-card {
+    background: var(--surface);
+    border: 2px solid var(--text);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '?';
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 80px;
+    color: rgba(26,20,8,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .q-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .q-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .answer-area {
+    margin-bottom: 16px;
+  }
+
+  .answer-area textarea {
+    margin-bottom: 0;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .submit-btn:hover { background: var(--gold); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Result card */
+  .result-card {
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-top: 16px;
+    display: none;
+    animation: fadeUp 0.4s ease both;
+    border: 2px solid;
+  }
+
+  .result-card.correct {
+    background: rgba(44,95,46,0.07);
+    border-color: var(--correct);
+  }
+
+  .result-card.incorrect {
+    background: rgba(192,57,43,0.07);
+    border-color: var(--incorrect);
+  }
+
+  .result-card.partial {
+    background: rgba(160,100,10,0.07);
+    border-color: var(--partial);
+  }
+
+  .result-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .result-text {
+    font-size: 16px;
+    line-height: 1.7;
+    font-weight: 500;
+  }
+
+  .result-text .correct-ans {
+    display: inline-block;
+    background: rgba(44,95,46,0.12);
+    border-left: 3px solid var(--correct);
+    padding: 6px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 8px;
+    font-size: 15px;
+    color: var(--correct);
+    font-weight: 600;
+    width: 100%;
+  }
+
+  /* Loading */
+  .eval-loading {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .next-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--text);
+    color: var(--text);
+    border-radius: 10px;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .next-btn:hover { background: var(--text); color: var(--bg); }
+
+  /* HISTORY PANEL */
+  .history-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--border);
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .history-item.correct { border-left-color: var(--correct); }
+  .history-item.incorrect { border-left-color: var(--incorrect); }
+  .history-item.partial { border-left-color: var(--partial); }
+
+  .hi-question { font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+  .hi-answer { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .hi-result { font-size: 13px; font-weight: 600; }
+  .hi-result.correct { color: var(--correct); }
+  .hi-result.incorrect { color: var(--incorrect); }
+  .hi-result.partial { color: var(--partial); }
+
+  .error-box {
+    background: rgba(192,57,43,0.08);
+    border: 1.5px solid rgba(192,57,43,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--incorrect);
+    font-size: 14px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    .stats-bar { gap: 14px; }
+    main { padding: 24px 14px 60px; }
+    .q-text { font-size: 19px; }
+  }
+
+  .badge-count {
+    background: var(--gold);
+    color: var(--text);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+  }
+
+  .save-indicator {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--correct);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 200;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(44,95,46,0.35);
+  }
+
+  .export-import-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-outline {
+    padding: 9px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Data Modal */
+  .data-modal-box {
+    background: var(--surface);
+    border: 2px solid var(--text);
+    border-radius: 16px;
+    padding: 26px 24px 22px;
+    max-width: 480px;
+    width: 92%;
+    animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+    box-shadow: 0 20px 60px rgba(26,20,8,0.25);
+  }
+
+  .data-modal-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .data-modal-box textarea {
+    width: 100%;
+    height: 200px;
+    font-family: monospace;
+    font-size: 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    resize: vertical;
+    outline: none;
+    margin-bottom: 14px;
+  }
+
+  .data-modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .btn-import-do {
+    padding: 10px 22px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-import-do:hover { background: var(--gold); }
+
+  /* Confirmation Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,20,8,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal-box {
+    background: var(--surface);
+    border: 2px solid var(--text);
+    border-radius: 16px;
+    padding: 30px 28px 24px;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+    box-shadow: 0 20px 60px rgba(26,20,8,0.25);
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-icon { font-size: 40px; margin-bottom: 12px; }
+
+  .modal-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .modal-msg {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .modal-q-preview {
+    background: var(--surface2);
+    border-left: 3px solid var(--incorrect);
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-cancel {
+    flex: 1;
+    padding: 11px;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 9px;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .modal-cancel:hover { border-color: var(--text); color: var(--text); }
+
+  .modal-confirm {
+    flex: 1;
+    padding: 11px;
+    background: var(--incorrect);
+    border: 2px solid var(--incorrect);
+    border-radius: 9px;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s;
+  }
+
+  .modal-confirm:hover { background: #a93226; border-color: #a93226; }
+</style>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">মুছে ফেলবেন?</div>
+    <div class="modal-msg">এই প্রশ্নটি স্থায়ীভাবে মুছে যাবে।</div>
+    <div class="modal-q-preview" id="modalQPreview"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">❌ বাতিল</button>
+      <button class="modal-confirm" onclick="confirmDelete()">🗑️ হ্যাঁ, মুছুন</button>
+    </div>
+  </div>
+</div>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    <div class="logo-text">
+      <h1 data-bn="Learn Arabic" data-en="Learn Arabic">Learn Arabic</h1>
+      <span>Made by Imran</span>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div id="hijriDate" style="font-size:10px; color:rgba(245,240,232,0.7); letter-spacing:0.3px;"></div>
+    <button onclick="syncNow()" style="
+      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25);
+      color:var(--bg); border-radius:6px; padding:4px 8px; font-size:12px;
+      cursor:pointer; transition:all 0.2s;" title="Sync">🔄</button>
+    <button id="langBtn" onclick="toggleLang()" style="
+      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25);
+      color:var(--bg); border-radius:6px; padding:4px 10px; font-size:12px;
+      font-weight:700; cursor:pointer; font-family:'Hind Siliguri',sans-serif;
+      transition:all 0.2s; letter-spacing:0.5px;">EN</button>
+  </div>
+</header>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+  <div class="data-modal-box" style="max-width:420px; text-align:center;">
+    <div class="data-modal-title">📤 ডেটা Export</div>
+    <button onclick="doDownloadJSON()" style="
+      width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer;
+      background:var(--text); color:var(--bg); font-family:'Hind Siliguri',sans-serif;
+      font-size:15px; font-weight:700; margin-bottom:12px;">
+      ⬇️ JSON ফাইল ডাউনলোড করুন
+    </button>
+    <textarea id="exportText" readonly
+      style="width:100%; height:130px; font-family:monospace; font-size:11px;
+             background:#1a1408; color:#f0c040; border:2px solid #b8860b;
+             border-radius:8px; padding:10px; box-sizing:border-box; line-height:1.5; text-align:left;"
+      onclick="this.focus(); this.select(); this.setSelectionRange(0,99999);"
+      onfocus="this.select();"></textarea>
+    <button onclick="doCopyExport(this)" style="
+      width:100%; padding:13px; border-radius:10px; border:2px solid var(--border);
+      background:var(--surface); color:var(--text); font-family:'Hind Siliguri',sans-serif;
+      font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;">
+      📋 কপি করুন
+    </button>
+    <button class="modal-cancel" style="width:100%; margin-top:8px;"
+      onclick="document.getElementById('exportModal').classList.remove('show')">বন্ধ করুন</button>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="data-modal-box" style="max-width:480px;">
+    <div class="data-modal-title">📥 ডেটা Import</div>
+
+    <!-- File upload -->
+    <label style="display:block; width:100%; padding:16px; border:2px dashed var(--border); border-radius:12px; text-align:center; cursor:pointer; background:var(--bg); margin-bottom:14px; font-size:14px; color:var(--muted); box-sizing:border-box;">
+      📁 JSON ফাইল বেছে নিন
+      <input type="file" accept=".json" onchange="handleJSONFile(this)" style="display:none;">
+    </label>
+
+    <div style="border-top:1.5px dashed var(--border); padding-top:14px;">
+      <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">
+        অথবা Export থেকে copy করা টেক্সট paste করুন:
+      </p>
+      <textarea id="importText"
+        style="width:100%; height:120px; font-family:monospace; font-size:11px;
+               background:#1a1408; color:#f0c040; border:2px solid #b8860b;
+               border-radius:8px; padding:10px; box-sizing:border-box; line-height:1.5; margin-bottom:0;"
+        placeholder="এখানে paste করুন..."
+        oninput="document.getElementById('importCharCount').textContent = this.value.length > 0 ? '📏 ' + this.value.length + ' character paste হয়েছে' : ''"></textarea>
+      <div id="importCharCount" style="font-size:11px; color:var(--gold); margin-top:5px; text-align:center; font-weight:600;"></div>
+      <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="doImportFromText()">✅ Import করুন</button>
+    </div>
+
+    <div id="importError" style="font-size:13px; color:var(--incorrect); margin-top:10px; padding:10px 12px; background:rgba(192,57,43,0.08); border-radius:6px; display:none;"></div>
+    <div id="importSuccess" style="font-size:13px; color:var(--correct); margin-top:10px; padding:10px 12px; background:rgba(44,95,46,0.08); border-radius:6px; display:none;"></div>
+
+    <button class="modal-cancel" style="width:100%; margin-top:12px;" onclick="closeImportModal()">বন্ধ করুন</button>
+  </div>
+</div>
+
+<!-- Data Modal (legacy) -->
+<div class="modal-overlay" id="dataModal">
+  <div class="data-modal-box">
+    <div class="data-modal-title" id="dataModalTitle"></div>
+    <textarea id="dataModalText" placeholder='এখানে JSON paste করুন...'></textarea>
+    <div class="data-modal-btns">
+      <button class="modal-cancel" onclick="closeDataModal()">বন্ধ করুন</button>
+      <button class="btn-import-do" id="dataModalCopy" style="display:none;">📋 কপি করুন</button>
+      <button class="btn-import-do" id="dataModalAction" style="display:none;">✅ Import করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Surah Add Modal -->
+<div class="modal-overlay" id="addSurahModal">
+  <div class="modal-box" style="text-align:left;">
+    <div class="modal-title" style="margin-bottom:14px;">📖 নতুন সূরা যোগ করুন</div>
+    <label>সূরার নাম (বাংলা)</label>
+    <input type="text" id="newSurahName" placeholder="যেমন: আল-ফাতিহা, আল-বাকারা..." style="margin-bottom:6px;" />
+    <label style="margin-top:4px;">সূরার নাম (আরবি) — ঐচ্ছিক</label>
+    <input type="text" id="newSurahArabic" placeholder="যেমন: الفاتحة" style="direction:rtl; font-size:18px;" />
+    <div class="modal-btns" style="margin-top:16px;">
+      <button class="modal-cancel" onclick="closeAddSurahModal()">বাতিল</button>
+      <button class="modal-confirm" style="background:var(--gold); border-color:var(--gold);" onclick="addSurah()">✚ যোগ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Save Indicator -->
+<div class="save-indicator" id="saveIndicator">✓ সেভ হয়েছে</div>
+
+<main>
+
+  <!-- DATABASE PANEL -->
+  <div class="panel active" id="panel-db">
+
+    <div class="export-import-bar">
+      <button class="btn-outline" onclick="exportDB()" data-bn="📤 ব্যাকআপ নিন (Export)" data-en="📤 Backup (Export)">📤 ব্যাকআপ নিন (Export)</button>
+      <button class="btn-outline" onclick="importDB()" data-bn="📥 ব্যাকআপ লোড করুন (Import)" data-en="📥 Load Backup (Import)">📥 ব্যাকআপ লোড করুন (Import)</button>
+    </div>
+
+    <div class="db-add-form">
+      <h3 data-bn="➕ নতুন প্রশ্ন যোগ করুন" data-en="➕ Add New Question">➕ নতুন প্রশ্ন যোগ করুন</h3>
+      <label data-bn="প্রশ্ন" data-en="Question">প্রশ্ন</label>
+      <input type="text" id="newQuestion" data-placeholder-bn="প্রশ্ন লিখুন..." data-placeholder-en="Write question..." placeholder="প্রশ্ন লিখুন..." />
+      <label data-bn="সঠিক উত্তর" data-en="Correct Answer">সঠিক উত্তর</label>
+      <input type="text" id="newAnswer" data-placeholder-bn="সঠিক উত্তর লিখুন..." data-placeholder-en="Write correct answer..." placeholder="সঠিক উত্তর লিখুন..." />
+      <button class="btn-primary" onclick="addQA()" data-bn="✚ যোগ করুন" data-en="✚ Add">✚ যোগ করুন</button>
+    </div>
+
+    <div style="position:relative; margin-bottom:14px;">
+      <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none;">🔍</span>
+      <input type="text" id="dbSearch" data-placeholder-bn="প্রশ্ন বা উত্তর খুঁজুন..." data-placeholder-en="Search questions or answers..." placeholder="প্রশ্ন বা উত্তর খুঁজুন..." oninput="searchDB()" style="padding-left:42px; margin-bottom:0;" />
+    </div>
+    <div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="searchResultCount"></div>
+    <div class="db-list" id="dbList"></div>
+  </div>
+
+  <!-- QUIZ PANEL -->
+  <div class="panel" id="panel-quiz">
+
+    <div class="quiz-select">
+      <label data-bn="প্রশ্ন বেছে নিন" data-en="Select a Question">প্রশ্ন বেছে নিন</label>
+      <select id="questionSelect" onchange="loadQuestion()">
+        <option value="" data-bn="-- প্রশ্ন বেছে নিন --" data-en="-- Select a question --">-- প্রশ্ন বেছে নিন --</option>
+      </select>
+    </div>
+
+    <div id="questionArea" style="display:none;">
+      <div class="question-card">
+        <div class="q-label" data-bn="প্রশ্ন" data-en="Question">প্রশ্ন</div>
+        <div class="q-text" id="questionText"></div>
+      </div>
+      <div class="answer-area">
+        <label data-bn="আপনার উত্তর" data-en="Your Answer">আপনার উত্তর</label>
+        <textarea id="userAnswer" rows="4" data-placeholder-bn="এখানে উত্তর লিখুন..." data-placeholder-en="Write your answer here..." placeholder="এখানে উত্তর লিখুন..."></textarea>
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="evaluateAnswer()" data-bn="🔍 উত্তর যাচাই করুন" data-en="🔍 Check Answer">🔍 উত্তর যাচাই করুন</button>
+      <div class="eval-loading" id="evalLoading">
+        <div class="spinner"></div>
+        <span data-bn="AI মূল্যায়ন করছে..." data-en="AI is evaluating...">AI মূল্যায়ন করছে...</span>
+      </div>
+      <div class="error-box" id="evalError"></div>
+      <div class="result-card" id="resultCard">
+        <span class="result-icon" id="resultIcon"></span>
+        <div class="result-text" id="resultText"></div>
+      </div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()" data-bn="পরবর্তী প্রশ্ন →" data-en="Next Question →">পরবর্তী প্রশ্ন →</button>
+    </div>
+  </div>
+
+  <!-- PRACTICE PANEL -->
+  <div class="panel" id="panel-practice">
+    <div class="section-title" data-bn="🔁 প্র্যাকটিস মোড" data-en="🔁 Practice Mode">🔁 প্র্যাকটিস মোড</div>
+    <p class="section-sub" data-bn="প্রশ্নগুলো সিলেক্ট করুন, তারপর একে একে উত্তর দিন।" data-en="Select questions, then answer them one by one.">যে প্রশ্নগুলো প্র্যাকটিস করতে চান সিলেক্ট করুন, তারপর একে একে উত্তর দিন।</p>
+
+    <div class="db-add-form" id="practiceSetup">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <h3 style="color:var(--gold); font-size:12px; letter-spacing:0.5px; text-transform:uppercase; font-weight:700;" data-bn="প্রশ্ন বেছে নিন" data-en="Select Questions">প্রশ্ন বেছে নিন</h3>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-outline" onclick="selectAllPractice()" data-bn="সব সিলেক্ট" data-en="Select All">সব সিলেক্ট</button>
+        </div>
+      </div>
+      <div id="practiceCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; color:var(--muted);">
+          <input type="checkbox" id="randomOrder" style="width:16px; height:16px; cursor:pointer;"> <span data-bn="এলোমেলো ক্রমে" data-en="Random Order">এলোমেলো ক্রমে</span>
+        </label>
+        <button class="btn-primary" onclick="startPractice()" style="flex:1; min-width:120px;" data-bn="▶ শুরু করুন" data-en="▶ Start">▶ শুরু করুন</button>
+      </div>
+    </div>
+
+    <div id="practiceArea" style="display:none;">
+      <!-- Progress bar -->
+      <div style="margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:6px;">
+          <span id="practiceProgressText"></span>
+          <span id="practiceScore" style="font-weight:600;"></span>
+        </div>
+        <div style="background:var(--border); border-radius:20px; height:6px; overflow:hidden;">
+          <div id="practiceBar" style="height:100%; background:linear-gradient(90deg, var(--correct), #6fcf72); border-radius:20px; transition:width 0.4s ease; width:0%;"></div>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <div class="q-label" id="practiceQLabel">প্রশ্ন <span id="practiceQNum"></span></div>
+        <div class="q-text" id="practiceQText"></div>
+      </div>
+
+      <div class="answer-area">
+        <label id="practiceAnsLabel" data-bn="আপনার উত্তর" data-en="Your Answer">আপনার উত্তর</label>
+        <textarea id="practiceAnswer" rows="4" placeholder="এখানে উত্তর লিখুন..."></textarea>
+      </div>
+
+      <button class="submit-btn" id="practiceSubmitBtn" onclick="submitPracticeAnswer()">🔍 যাচাই করুন</button>
+
+      <div class="eval-loading" id="practiceLoading">
+        <div class="spinner"></div>
+        <span>AI মূল্যায়ন করছে...</span>
+      </div>
+
+      <div class="result-card" id="practiceResult" style="display:none;">
+        <div class="result-text" id="practiceResultText"></div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button id="practiceNextBtn" onclick="nextPracticeQ()" style="
+          display:none; flex:1;
+          padding:13px 20px;
+          background: linear-gradient(135deg, var(--text) 0%, #3a3020 100%);
+          color: var(--bg);
+          border: none;
+          border-radius: 12px;
+          font-family: 'Hind Siliguri', sans-serif;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.25s;
+          box-shadow: 0 4px 14px rgba(26,20,8,0.18);
+          letter-spacing: 0.3px;
+          position: relative;
+          overflow: hidden;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(26,20,8,0.28)'"
+           onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 14px rgba(26,20,8,0.18)'">
+          <span style="display:inline-flex; align-items:center; gap:8px; justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 16 16 12 12 8"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            পরবর্তী প্রশ্ন
+          </span>
+        </button>
+        <button id="practiceStopBtn" onclick="stopPractice()" style="
+          display:none; flex:0 0 auto;
+          padding:13px 18px;
+          background: transparent;
+          color: var(--incorrect);
+          border: 2px solid var(--incorrect);
+          border-radius: 12px;
+          font-family: 'Hind Siliguri', sans-serif;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.25s;
+          letter-spacing: 0.3px;
+        " onmouseover="this.style.background='var(--incorrect)';this.style.color='white';this.style.transform='translateY(-2px)'"
+           onmouseout="this.style.background='transparent';this.style.color='var(--incorrect)';this.style.transform='translateY(0)'">
+          <span style="display:inline-flex; align-items:center; gap:7px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+            </svg>
+            বন্ধ করুন
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Practice Summary -->
+    <div id="practiceSummary" style="display:none;">
+      <div class="question-card" style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:12px;">🎉</div>
+        <div class="q-text" style="font-size:20px; margin-bottom:8px;">প্র্যাকটিস শেষ!</div>
+        <div id="summaryText" style="font-size:15px; color:var(--muted); margin-bottom:20px;"></div>
+        <button class="btn-primary" onclick="resetPractice()">🔄 আবার শুরু করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH PANEL -->
+  <div class="panel" id="panel-search">
+    <div class="section-title" data-bn="🔍 খুঁজুন" data-en="🔍 Search">🔍 খুঁজুন</div>
+    <p class="section-sub" data-bn="প্রশ্ন বা উত্তরের যেকোনো অংশ লিখুন — সাথে সাথে খুঁজে দেবে।" data-en="Type any part of a question or answer — results appear instantly.">প্রশ্ন বা উত্তরের যেকোনো অংশ লিখুন — সাথে সাথে খুঁজে দেবে।</p>
+    <div style="position:relative; margin-bottom:8px;">
+      <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:18px; pointer-events:none;">🔍</span>
+      <input type="text" id="mainSearch" data-placeholder-bn="এখানে লিখুন..." data-placeholder-en="Type here..." placeholder="এখানে লিখুন..." oninput="doMainSearch()"
+        style="padding-left:46px; font-size:17px; margin-bottom:0;" autofocus />
+    </div>
+    <div style="font-size:13px; color:var(--muted); margin-bottom:16px;" id="mainSearchCount"></div>
+    <div id="mainSearchResults"></div>
+  </div>
+
+  <!-- SURAH PANEL -->
+  <div class="panel" id="panel-surah">
+
+    <!-- Surah List View -->
+    <div id="surah-list-view">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div class="section-title" style="margin-bottom:0;">📖 সূরাসমূহ</div>
+        <button class="btn-primary" onclick="openAddSurahModal()">✚ নতুন সূরা</button>
+      </div>
+      <div id="surahGrid" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <!-- Surah Detail View -->
+    <div id="surah-detail-view" style="display:none;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <button onclick="closeSurahDetail()" style="
+          padding:7px 14px; background:transparent; border:1.5px solid var(--border);
+          border-radius:8px; font-size:13px; cursor:pointer; color:var(--muted);
+          font-family:'Hind Siliguri',sans-serif; font-weight:600;">
+          ← ফিরে যান
+        </button>
+        <div style="flex:1;">
+          <div id="surahDetailName" style="font-family:'Crimson Pro',serif; font-size:22px; font-weight:600; color:var(--text);"></div>
+          <div id="surahDetailCount" style="font-size:12px; color:var(--muted);"></div>
+        </div>
+        <button onclick="openAddQAToSurah()" style="
+          padding:7px 14px; background:var(--text); color:var(--bg); border:none;
+          border-radius:8px; font-size:13px; cursor:pointer; font-family:'Hind Siliguri',sans-serif; font-weight:600;">
+          ✚ প্রশ্ন যোগ
+        </button>
+      </div>
+
+      <!-- Add QA form (hidden by default) -->
+      <div id="surahAddQAForm" style="display:none; background:var(--surface); border:2px solid var(--border); border-radius:12px; padding:18px; margin-bottom:18px;">
+        <h3 style="font-size:12px; font-weight:700; color:var(--gold); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:14px;">➕ নতুন প্রশ্ন যোগ করুন</h3>
+        <label>প্রশ্ন</label>
+        <input type="text" id="surahNewQ" placeholder="প্রশ্ন লিখুন..." />
+        <label>সঠিক উত্তর</label>
+        <input type="text" id="surahNewA" placeholder="সঠিক উত্তর লিখুন..." />
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary" onclick="addQAToSurah()">✚ যোগ করুন</button>
+          <button onclick="document.getElementById('surahAddQAForm').style.display='none'" style="padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:14px; cursor:pointer; color:var(--muted);">বাতিল</button>
+        </div>
+      </div>
+
+      <!-- QA list for this surah -->
+      <div id="surahQAList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div id="historyList"></div>
+
+    <div style="margin-top: 32px; border-top: 2px dashed var(--border); padding-top: 24px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div class="section-title" style="font-size:20px; margin-bottom:0;" data-bn="📝 নোটসমূহ" data-en="📝 Notes">📝 নোটসমূহ</div>
+        <button class="btn-primary" onclick="addNewNote()" data-bn="✚ নতুন নোট" data-en="✚ New Note">✚ নতুন নোট</button>
+      </div>
+      <div style="position:relative; margin-bottom:14px;">
+        <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; pointer-events:none;">🔍</span>
+        <input type="text" id="noteSearch" data-placeholder-bn="নোট খুঁজুন..." data-placeholder-en="Search notes..." placeholder="নোট খুঁজুন..." oninput="searchNotes()"
+          style="padding-left:40px; margin-bottom:0; font-size:14px;" />
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="noteSearchCount"></div>
+      <div id="notesList"></div>
+    </div>
+  </div>
+
+
+</main>
+
+<!-- Bottom Navigation -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('db')">
+    <span class="tab-icon">🗄️</span>
+    <span class="tab-label" data-bn="ডেটাবেজ" data-en="Database">ডেটাবেজ</span>
+  </button>
+  <button class="tab" onclick="switchTab('surah')">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label" data-bn="সূরা" data-en="Surah">সূরা</span>
+  </button>
+  <button class="tab" onclick="switchTab('quiz')">
+    <span class="tab-icon">✍️</span>
+    <span class="tab-label" data-bn="পরীক্ষা" data-en="Quiz">পরীক্ষা</span>
+  </button>
+  <button class="tab" onclick="switchTab('practice')">
+    <span class="tab-icon">🔁</span>
+    <span class="tab-label" data-bn="প্র্যাকটিস" data-en="Practice">প্র্যাকটিস</span>
+  </button>
+  <button class="tab" onclick="switchTab('search')">
+    <span class="tab-icon">🔍</span>
+    <span class="tab-label" data-bn="খুঁজুন" data-en="Search">খুঁজুন</span>
+  </button>
+  <button class="tab" onclick="switchTab('history')">
+    <span class="tab-icon">📝</span>
+    <span class="tab-label" data-bn="নোটস" data-en="Notes">নোটস</span>
+  </button>
+</div>
+
+<!-- Firebase Dynamic Loader -->
+<script>
+  window._firebaseReady = false;
+  window._currentDB = null;
+  window._currentNotes = null;
+  window._currentSurahs = null;
+
+  function initFirebase() {
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBph5jOFdvhI3A5p27CcFIJFJv5BWGNV6g",
+        authDomain: "learn-arabic-5afd2.firebaseapp.com",
+        databaseURL: "https://learn-arabic-5afd2-default-rtdb.firebaseio.com",
+        projectId: "learn-arabic-5afd2",
+        storageBucket: "learn-arabic-5afd2.firebasestorage.app",
+        messagingSenderId: "617342283643",
+        appId: "1:617342283643:web:101e43e38f89b143f017de"
+      };
+
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const fbDb = firebase.database();
+
+      window.firebaseSaveDB = async function(data) {
+        try { await fbDb.ref('database').set(data); console.log('✅ Saved to Firebase'); }
+        catch(e) { console.log('FB save error:', e); }
+      };
+
+      window.firebaseSaveNotes = async function(data) {
+        try { await fbDb.ref('notes').set(data); }
+        catch(e) { console.log('FB notes save error:', e); }
+      };
+
+      window.firebaseLoadDB = async function() {
+        try {
+          const snap = await fbDb.ref('database').get();
+          if (snap.exists()) return snap.val();
+        } catch(e) { console.log('FB load error:', e); }
+        return null;
+      };
+
+      window.firebaseLoadNotes = async function() {
+        try {
+          const snap = await fbDb.ref('notes').get();
+          if (snap.exists()) return snap.val();
+        } catch(e) {}
+        return null;
+      };
+
+      fbDb.ref('database').on('value', (snap) => {
+        if (snap.exists() && window._firebaseReady) {
+          const d = snap.val();
+          if (JSON.stringify(d) !== JSON.stringify(window._currentDB)) {
+            window._currentDB = d;
+            window.database = d;
+            if (window.renderDB) window.renderDB();
+            if (window.populateSelect) window.populateSelect();
+          }
+        }
+      });
+
+      fbDb.ref('notes').on('value', (snap) => {
+        if (snap.exists() && window._firebaseReady) {
+          const d = snap.val();
+          if (JSON.stringify(d) !== JSON.stringify(window._currentNotes)) {
+            window._currentNotes = d;
+            window.notes = d;
+            if (window.renderNotes) window.renderNotes();
+          }
+        }
+      });
+
+      window.firebaseSaveSurahs = async function(data) {
+        try { await fbDb.ref('surahs').set(data); }
+        catch(e) { console.log('FB surahs save error:', e); }
+      };
+
+      window.firebaseLoadSurahs = async function() {
+        try {
+          const snap = await fbDb.ref('surahs').get();
+          if (snap.exists()) return snap.val();
+        } catch(e) {}
+        return null;
+      };
+
+      fbDb.ref('surahs').on('value', (snap) => {
+        if (snap.exists() && window._firebaseReady) {
+          const d = snap.val();
+          if (JSON.stringify(d) !== JSON.stringify(window._currentSurahs)) {
+            window._currentSurahs = d;
+            window.surahs = d;
+            surahs = d;
+            if (window.renderSurahList && document.getElementById('panel-surah').classList.contains('active')) {
+              window.renderSurahList();
+            }
+          }
+        }
+      });
+
+      console.log('✅ Firebase connected!');
+      if (window.loadDatabase) window.loadDatabase();
+
+    } catch(e) { console.log('Firebase init error:', e); }
+  }
+
+  // Load Firebase scripts dynamically
+  function loadScript(src, cb) {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  loadScript('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js', function() {
+    loadScript('https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js', function() {
+      initFirebase();
+    });
+  });
+</script>
+
+<script>
+  // ─── State ───────────────────────────────────────────────
+  const DEFAULT_DB = [
+    { q: "মানুষ কোথা থেকে সৃষ্টি হয়েছে?", a: "শুকনো শব্দকারী মাটি থেকে" },
+    { q: "জিন কোথা থেকে সৃষ্টি হয়েছে?", a: "আগুনের শিখা থেকে" }
+  ];
+
+  let database = [];
+  let stats = { correct: 0, incorrect: 0, total: 0 };
+  let history = [];
+  let currentQIndex = -1;
+  let pendingDeleteIndex = -1;
+
+  // ─── Persistent Storage (Firebase + localStorage fallback) ──
+  const STORAGE_KEY = 'proshnomala_qa_database';
+
+  async function saveDatabase() {
+    const json = JSON.stringify(database);
+    try { localStorage.setItem(STORAGE_KEY, json); } catch(e) {}
+    try { await window.storage.set(STORAGE_KEY, json); } catch(e) {}
+    // Firebase save
+    if (window.firebaseSaveDB) {
+      window._currentDB = database;
+      await window.firebaseSaveDB(database);
+    }
+    showSaveIndicator();
+  }
+
+  async function loadDatabase() {
+    let loaded = false;
+
+    // Try Firebase first
+    if (window.firebaseLoadDB) {
+      try {
+        const data = await window.firebaseLoadDB();
+        if (data && Array.isArray(data) && data.length > 0) {
+          database = data;
+          window._currentDB = data;
+          loaded = true;
+          showToast('✅ Firebase থেকে data load হয়েছে!', 'green');
+        }
+      } catch(e) {}
+    }
+
+    // Fallback to localStorage
+    if (!loaded) {
+      try {
+        const result = await window.storage.get(STORAGE_KEY);
+        if (result && result.value) { database = JSON.parse(result.value); loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) { database = JSON.parse(raw); loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) { database = [...DEFAULT_DB]; await saveDatabase(); }
+
+    window._firebaseReady = true;
+    window.database = database;
+    renderDB();
+  }
+
+  function showSaveIndicator() {
+    let ind = document.getElementById('saveIndicator');
+    if (!ind) return;
+    ind.style.opacity = '1';
+    setTimeout(() => { ind.style.opacity = '0'; }, 1800);
+  }
+
+  // ─── Tabs ────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    // Find the tab button with matching onclick
+    document.querySelectorAll('.tab').forEach(t => {
+      if (t.getAttribute('onclick') === `switchTab('${tab}')`) t.classList.add('active');
+    });
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'surah') renderSurahList();
+    if (tab === 'db') renderDB();
+    if (tab === 'quiz') populateSelect();
+    if (tab === 'practice') initPracticeSetup();
+    if (tab === 'search') { document.getElementById('mainSearch').focus(); doMainSearch(); }
+    if (tab === 'history') renderHistory();
+    if (tab === 'history') loadNote();
+    // Scroll to top
+    document.querySelector('main').scrollTop = 0;
+  }
+
+  // ─── Sync ────────────────────────────────────────────────
+  async function syncNow() {
+    const btn = document.querySelector('[onclick="syncNow()"]');
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+    try {
+      if (window.firebaseLoadDB) {
+        const data = await window.firebaseLoadDB();
+        if (data && Array.isArray(data)) {
+          database = data;
+          window._currentDB = data;
+          window.database = data;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+          renderDB();
+          populateSelect();
+        }
+      }
+      if (window.firebaseLoadNotes) {
+        const ndata = await window.firebaseLoadNotes();
+        if (ndata && Array.isArray(ndata)) {
+          notes = ndata;
+          window._currentNotes = ndata;
+          window.notes = ndata;
+          renderNotes();
+        }
+      }
+      showToast('✅ Sync হয়েছে!', 'green');
+    } catch(e) {
+      showToast('❌ Sync হয়নি', 'red');
+    }
+    if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+  }
+  function renderDB(filtered = null) {
+    const list = document.getElementById('dbList');
+    const items = filtered !== null ? filtered : database.map((item, i) => ({ ...item, origIndex: i }));
+    if (database.length === 0) {
+      const isEn = currentLang === 'en';
+      list.innerHTML = '<div class="empty-state">📭 ' + (isEn ? 'No questions yet. Add above.' : 'এখনো কোনো প্রশ্ন নেই। উপরে যোগ করুন।') + '</div>';
+      return;
+    }
+    if (items.length === 0) {
+      const isEn = currentLang === 'en';
+      list.innerHTML = '<div class="empty-state">🔍 ' + (isEn ? 'No results found.' : 'কোনো ফলাফল পাওয়া যায়নি।') + '</div>';
+      return;
+    }
+    list.innerHTML = items.map((item) => {
+      const i = item.origIndex !== undefined ? item.origIndex : database.indexOf(item);
+      const isEn = currentLang === 'en';
+      const dateTime = item.date ? '<div style="font-size:10px; color:#7a6e5a; text-align:right; margin-top:4px;">🕐 ' + item.date + ' ' + item.time + '</div>' : '';
+      const qText = item.qHtml || escHtml(item.q);
+      const aText = item.aHtml || escHtml(item.a);
+      return '<div class="db-item">' +
+        '<div class="db-item-content">' +
+          '<div id="view-' + i + '">' +
+            '<div class="db-item-q">' + (i+1) + '. ' + qText + '</div>' +
+            '<div style="display:flex; align-items:center; gap:8px; margin-top:5px;">' +
+              '<div class="db-item-a" id="ans-' + i + '" style="filter:blur(4px); user-select:none; transition:filter 0.3s;">' + aText + '</div>' +
+              '<button onclick="toggleAns(' + i + ')" id="ans-btn-' + i + '" style="font-size:11px; padding:3px 10px; border:1px solid #ddd5c0; border-radius:6px; background:transparent; cursor:pointer; color:#7a6e5a; font-family:\'Hind Siliguri\',sans-serif; white-space:nowrap;">👁️ ' + (isEn ? 'Show' : 'দেখুন') + '</button>' +
+            '</div>' +
+            dateTime +
+          '</div>' +
+          '<div id="edit-' + i + '" style="display:none; margin-top:6px;">' +
+            '<input type="text" id="eq-' + i + '" value="' + escHtml(item.q) + '" style="margin-bottom:6px; font-size:14px; width:100%;" />' +
+            '<input type="text" id="ea-' + i + '" value="' + escHtml(item.a) + '" style="margin-bottom:8px; font-size:14px; width:100%;" />' +
+            '<div style="display:flex; gap:8px;">' +
+              '<button onclick="saveEdit(' + i + ')" style="padding:6px 14px; background:#1a1408; color:#f5f0e8; border:none; border-radius:7px; font-family:\'Hind Siliguri\',sans-serif; font-size:13px; font-weight:700; cursor:pointer;">' + (isEn ? '✅ Save' : '✅ সেভ') + '</button>' +
+              '<button onclick="cancelEdit(' + i + ')" style="padding:6px 14px; background:transparent; border:1.5px solid #ddd5c0; border-radius:7px; font-family:\'Hind Siliguri\',sans-serif; font-size:13px; cursor:pointer; color:#7a6e5a;">' + (isEn ? 'Cancel' : 'বাতিল') + '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex; flex-direction:column; gap:6px;">' +
+          '<button onclick="startEdit(' + i + ')" id="edit-btn-' + i + '" style="padding:5px 12px; background:transparent; border:1.5px solid #ddd5c0; border-radius:6px; font-size:12px; cursor:pointer; color:#7a6e5a; font-family:\'Hind Siliguri\',sans-serif;">' + (isEn ? '✏️ Edit' : '✏️ এডিট') + '</button>' +
+          '<button class="btn-danger" onclick="deleteQA(' + i + ')">' + (isEn ? 'Delete' : 'মুছুন') + '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function searchDB() {
+    const q = document.getElementById('dbSearch').value.trim().toLowerCase();
+    const countEl = document.getElementById('searchResultCount');
+    if (!q) {
+      countEl.textContent = '';
+      renderDB();
+      return;
+    }
+    const highlight = (text, term) => {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return escHtml(text).replace(new RegExp(`(${escaped})`, 'gi'), '<mark style="background:rgba(184,134,11,0.3);border-radius:3px;padding:0 2px;">$1</mark>');
+    };
+    const results = database.map((item, i) => ({ ...item, origIndex: i }))
+      .filter(item => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q))
+      .map(item => ({
+        ...item,
+        qHtml: highlight(item.q, q),
+        aHtml: highlight(item.a, q)
+      }));
+    const isEn = currentLang === 'en';
+    countEl.textContent = isEn ? `${results.length} result(s) found` : `${results.length}টি ফলাফল পাওয়া গেছে`;
+    renderDB(results);
+  }
+
+  function revealAns() {
+    const isEn = currentLang === 'en';
+    const el = document.getElementById('blurAns');
+    const btn = document.getElementById('revealBtn');
+    if (!el) return;
+    if (el.style.filter === 'none') {
+      el.style.filter = 'blur(5px)';
+      el.style.userSelect = 'none';
+      btn.textContent = isEn ? '👁️ Show Answer' : '👁️ সঠিক উত্তর দেখুন';
+    } else {
+      el.style.filter = 'none';
+      el.style.userSelect = 'text';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
+    }
+  }
+
+  function toggleAns(i) {
+    const isEn = currentLang === 'en';
+    const ans = document.getElementById(`ans-${i}`);
+    const btn = document.getElementById(`ans-btn-${i}`);
+    if (ans.style.filter === 'none') {
+      ans.style.filter = 'blur(4px)';
+      ans.style.userSelect = 'none';
+      btn.textContent = isEn ? '👁️ Show' : '👁️ দেখুন';
+    } else {
+      ans.style.filter = 'none';
+      ans.style.userSelect = 'text';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
+    }
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function addQA() {
+    const isEn = currentLang === 'en';
+    const q = document.getElementById('newQuestion').value.trim();
+    const a = document.getElementById('newAnswer').value.trim();
+    if (!q || !a) { alert(isEn ? 'Enter both question and answer!' : 'প্রশ্ন ও উত্তর দুটোই দিন!'); return; }
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    database.push({ q, a, date, time });
+    document.getElementById('newQuestion').value = '';
+    document.getElementById('newAnswer').value = '';
+    renderDB();
+    await saveDatabase();
+  }
+
+  function startEdit(i) {
+    document.getElementById(`view-${i}`).style.display = 'none';
+    document.getElementById(`edit-${i}`).style.display = 'block';
+    document.getElementById(`edit-btn-${i}`).style.display = 'none';
+    document.getElementById(`eq-${i}`).focus();
+  }
+
+  function cancelEdit(i) {
+    document.getElementById(`view-${i}`).style.display = 'block';
+    document.getElementById(`edit-${i}`).style.display = 'none';
+    document.getElementById(`edit-btn-${i}`).style.display = 'block';
+  }
+
+  async function saveEdit(i) {
+    const newQ = document.getElementById(`eq-${i}`).value.trim();
+    const newA = document.getElementById(`ea-${i}`).value.trim();
+    const isEn = currentLang === 'en';
+    if (!newQ || !newA) { alert(isEn ? 'Both fields required!' : 'দুটো ফিল্ড পূরণ করুন!'); return; }
+    database[i].q = newQ;
+    database[i].a = newA;
+    await saveDatabase();
+    renderDB();
+  }
+
+  function deleteQA(i) {
+    pendingDeleteIndex = i;
+    document.getElementById('modalQPreview').textContent = database[i].q;
+    document.getElementById('confirmModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('confirmModal').classList.remove('show');
+    pendingDeleteIndex = -1;
+  }
+
+  async function confirmDelete() {
+    if (pendingDeleteIndex >= 0) {
+      database.splice(pendingDeleteIndex, 1);
+      renderDB();
+      await saveDatabase();
+    }
+    closeModal();
+  }
+
+  document.getElementById('confirmModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ─── Export / Import ─────────────────────────────────────
+  async function exportDB() {
+    if (database.length === 0 && notes.length === 0) { showToast('❌ ডেটাবেজ খালি!', 'red'); return; }
+    const backup = { database, notes, surahs };
+    const json = JSON.stringify(backup, null, 2);
+    document.getElementById('exportText').value = json;
+    document.getElementById('exportModal').classList.add('show');
+    setTimeout(() => {
+      const ta = document.getElementById('exportText');
+      ta.focus(); ta.select(); ta.setSelectionRange(0, 99999);
+    }, 250);
+  }
+
+  async function doCopyExport(btn) {
+    const text = document.getElementById('exportText').value;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✅ কপি হয়েছে!';
+      btn.style.background = 'rgba(44,95,46,0.15)';
+      btn.style.borderColor = 'var(--correct)';
+      btn.style.color = 'var(--correct)';
+      setTimeout(() => {
+        btn.textContent = '📋 কপি করুন';
+        btn.style.background = 'var(--surface)';
+        btn.style.borderColor = 'var(--border)';
+        btn.style.color = 'var(--text)';
+      }, 2000);
+    } catch(e) {
+      const ta = document.getElementById('exportText');
+      ta.focus(); ta.select(); ta.setSelectionRange(0, 99999);
+      btn.textContent = '☑️ সিলেক্ট হয়েছে — এখন দীর্ঘ চাপ → কপি';
+      setTimeout(() => { btn.textContent = '📋 কপি করুন'; }, 3000);
+    }
+  }
+
+  function doDownloadJSON() {
+    const backup = { database, notes, surahs };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'proshnomala-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ ফাইল ডাউনলোড হচ্ছে!', 'green');
+    setTimeout(() => document.getElementById('exportModal').classList.remove('show'), 1000);
+  }
+
+  function importDB() {
+    document.getElementById('importError').style.display = 'none';
+    document.getElementById('importSuccess').style.display = 'none';
+    document.getElementById('importModal').classList.add('show');
+  }
+
+  function closeImportModal() {
+    document.getElementById('importModal').classList.remove('show');
+  }
+
+  function handleJSONFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const errEl = document.getElementById('importError');
+    const okEl = document.getElementById('importSuccess');
+    errEl.style.display = 'none';
+    okEl.style.display = 'none';
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        let data, notesData;
+
+        // New format: { database: [...], notes: [...] }
+        if (parsed && !Array.isArray(parsed) && parsed.database) {
+          data = parsed.database;
+          notesData = parsed.notes || [];
+        } else if (Array.isArray(parsed)) {
+          // Old format: just array of QA
+          data = parsed;
+          notesData = null;
+        } else throw new Error();
+
+        if (!Array.isArray(data) || data.length === 0) throw new Error();
+        if (!data.every(d => d.q !== undefined && d.a !== undefined)) throw new Error();
+
+        database = data;
+        renderDB();
+        await saveDatabase();
+
+        if (notesData && Array.isArray(notesData)) {
+          notes = notesData;
+          window.notes = notes;
+          window._currentNotes = notes;
+          renderNotes();
+          await saveNotes();
+        }
+
+        if (parsed.surahs && Array.isArray(parsed.surahs)) {
+          surahs = parsed.surahs;
+          window.surahs = surahs;
+          window._currentSurahs = surahs;
+          await saveSurahs();
+        }
+
+        const notesMsg = (notesData && notesData.length > 0) ? ` + ${notesData.length} নোট` : '';
+        const surahMsg = (parsed.surahs && parsed.surahs.length > 0) ? ` + ${parsed.surahs.length} সূরা` : '';
+        okEl.textContent = `✅ ${data.length} টি প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`;
+        okEl.style.display = 'block';
+        showToast(`✅ ${data.length} প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`, 'green');
+        setTimeout(() => closeImportModal(), 1500);
+      } catch(e) {
+        errEl.textContent = '❌ ফাইলটা সঠিক নয়। proshnomala-backup.json ফাইল দিন।';
+        errEl.style.display = 'block';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  async function doImportFromText() {
+    const errEl = document.getElementById('importError');
+    const okEl = document.getElementById('importSuccess');
+    errEl.style.display = 'none'; okEl.style.display = 'none';
+
+    let raw = document.getElementById('importText').value;
+    if (!raw || !raw.trim()) { 
+      errEl.textContent = '❌ কিছু paste করুন!'; 
+      errEl.style.display = 'block'; 
+      return; 
+    }
+
+    raw = raw.trim().replace(/^\uFEFF/, '');
+    // Only extract array if the raw text is NOT a full JSON object
+    if (!raw.startsWith('{')) {
+      const arrMatch = raw.match(/(\[[\s\S]*\])/);
+      if (arrMatch) raw = arrMatch[1];
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      let data, notesData;
+
+      // New format: { database: [...], notes: [...] }
+      if (parsed && !Array.isArray(parsed) && parsed.database) {
+        data = parsed.database;
+        notesData = parsed.notes || [];
+      } else if (Array.isArray(parsed)) {
+        data = parsed.map(d => {
+          if (d.q !== undefined && d.a !== undefined) return d;
+          if (d.question !== undefined && d.answer !== undefined) return { q: d.question, a: d.answer };
+          throw new Error('bad format');
+        });
+        notesData = null;
+      } else throw new Error('not array or object');
+
+      database = data;
+      window.database = data;
+      renderDB();
+      await saveDatabase();
+
+      if (notesData && Array.isArray(notesData)) {
+        notes = notesData;
+        window.notes = notes;
+        window._currentNotes = notes;
+        renderNotes();
+        await saveNotes();
+      }
+
+      if (parsed && parsed.surahs && Array.isArray(parsed.surahs)) {
+        surahs = parsed.surahs;
+        window.surahs = surahs;
+        window._currentSurahs = surahs;
+        await saveSurahs();
+      }
+
+      const notesMsg = (notesData && notesData.length > 0) ? ` + ${notesData.length} নোট` : '';
+      const surahMsg = (parsed && parsed.surahs && parsed.surahs.length > 0) ? ` + ${parsed.surahs.length} সূরা` : '';
+      okEl.textContent = `✅ ${database.length} টি প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`;
+      okEl.style.display = 'block';
+      showToast(`✅ ${database.length} প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`, 'green');
+      setTimeout(() => closeImportModal(), 1500);
+    } catch(e) {
+      const len = raw.length;
+      const preview = raw.slice(0,30).replace(/</g,'&lt;');
+      const ending = raw.slice(-20).replace(/</g,'&lt;');
+      errEl.innerHTML = `❌ JSON parse হচ্ছে না।<br>
+        <span style="font-size:11px; line-height:1.8; display:block; margin-top:4px;">
+        📏 মোট character: <b>${len}</b><br>
+        শুরু: <code style="background:#0002;padding:1px 4px;border-radius:3px;">${preview}</code><br>
+        শেষ: <code style="background:#0002;padding:1px 4px;border-radius:3px;">${ending}</code>
+        </span>
+        <span style="font-size:11px; margin-top:6px; display:block; color:var(--muted);">
+        💡 Export থেকে <b>ফাইল ডাউনলোড → ফাইল Upload</b> করুন — এটাই সবচেয়ে নির্ভরযোগ্য।
+        </span>`;
+      errEl.style.display = 'block';
+    }
+  }
+
+  async function doImportNew() {} // legacy stub
+
+  document.getElementById('exportModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+  document.getElementById('importModal').addEventListener('click', function(e) {
+    if (e.target === this) closeImportModal();
+  });
+
+  function showToast(msg, color) {
+    const el = document.getElementById('saveIndicator');
+    el.textContent = msg;
+    el.style.background = color === 'red' ? '#c0392b' : '#2c5f2e';
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
+  function closeDataModal() {
+    document.getElementById('dataModal').classList.remove('show');
+  }
+
+  document.getElementById('dataModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDataModal();
+  });
+
+  // ─── Quiz Panel ──────────────────────────────────────────
+  function populateSelect() {
+    const sel = document.getElementById('questionSelect');
+    const isEn = currentLang === 'en';
+    sel.innerHTML = `<option value="">${isEn ? '-- Select a question --' : '-- প্রশ্ন বেছে নিন --'}</option>`;
+    database.forEach((item, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${i+1}. ${item.q}`;
+      sel.appendChild(opt);
+    });
+    document.getElementById('questionArea').style.display = 'none';
+  }
+
+  function loadQuestion() {
+    const idx = document.getElementById('questionSelect').value;
+    if (idx === '') { document.getElementById('questionArea').style.display = 'none'; return; }
+    const isEn = currentLang === 'en';
+    currentQIndex = parseInt(idx);
+    document.getElementById('questionText').textContent = database[currentQIndex].q;
+    document.getElementById('userAnswer').value = '';
+    document.getElementById('userAnswer').placeholder = isEn ? 'Write your answer here...' : 'এখানে উত্তর লিখুন...';
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('evalError').style.display = 'none';
+    document.getElementById('evalLoading').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = isEn ? '🔍 Check Answer' : '🔍 উত্তর যাচাই করুন';
+    document.getElementById('questionArea').style.display = 'block';
+  }
+
+  async function evaluateAnswer() {
+    const isEn = currentLang === 'en';
+    const userAns = document.getElementById('userAnswer').value.trim();
+    if (!userAns) { alert(isEn ? 'Please write an answer!' : 'উত্তর লিখুন!'); return; }
+    if (currentQIndex < 0) return;
+
+    const question = database[currentQIndex].q;
+    const correctAnswer = database[currentQIndex].a;
+
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('evalError').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+
+    // ── Quick Exact Match (instant) ──────────────────────────
+    const normalize = s => s.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[।,!?\.]/g, '');
+    if (normalize(userAns) === normalize(correctAnswer)) {
+      const msg = isEn ? '✅ Correct! Excellent answer.' : '✅ সঠিক! চমৎকার উত্তর দিয়েছেন।';
+      showResult(msg, 'correct', question, userAns, correctAnswer);
+      return;
+    }
+
+    // ── AI Evaluation ────────────────────────────────────────
+    document.getElementById('evalLoading').style.display = 'flex';
+    document.getElementById('evalLoading').querySelector('span').textContent =
+      isEn ? 'AI is evaluating...' : 'AI মূল্যায়ন করছে...';
+
+    const prompt = `You are a strict QA evaluator. Compare the user's answer with the correct answer by meaning only.
+
+Question: ${question}
+Correct Answer: ${correctAnswer}
+User's Answer: ${userAns}
+
+Evaluation rules:
+- Ignore minor spelling or grammar differences
+- Check the meaning carefully
+- Respond in ${isEn ? 'English' : 'the SAME language as the user\'s answer (Bangla if Bangla, English if English)'}
+- Respond in exactly ONE of these formats:
+  1. If correct: Start with exactly "✅ Correct!" then optionally a short praise sentence.
+  2. If incorrect: Start with exactly "❌ Incorrect." then on a new line write "The correct answer is:" followed by the correct answer.
+  3. If partially correct: Start with "⚠️ Partially correct." give a brief explanation, then the correct answer.
+- No extra commentary. Only the evaluation.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 300,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error?.message || 'API error');
+      const result = data.content.map(i => i.text || '').join('').trim();
+      let type = 'incorrect';
+      if (result.startsWith('✅')) type = 'correct';
+      else if (result.startsWith('⚠️')) type = 'partial';
+      showResult(result, type, question, userAns, correctAnswer);
+
+    } catch (err) {
+      const isEn = currentLang === 'en';
+      document.getElementById('evalError').textContent = isEn ? '❌ Evaluation failed. Please try again.' : '❌ মূল্যায়নে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+      document.getElementById('evalError').style.display = 'block';
+      document.getElementById('submitBtn').disabled = false;
+    } finally {
+      document.getElementById('evalLoading').style.display = 'none';
+    }
+  }
+
+  function showResult(result, type, question, userAns, correctAnswer) {
+    const isEn = currentLang === 'en';
+    let displayResult = result.replace(/\n/g, '<br>');
+    if (type === 'incorrect' || type === 'partial') {
+      displayResult = displayResult.replace(
+        /(সঠিক উত্তর:|The correct answer is:)(.*)/,
+        `$1 <span id="blurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;display:inline;">$2</span>
+         <br><button onclick="revealAns()" id="revealBtn" style="margin-top:8px;padding:6px 16px;border:1.5px solid var(--border);border-radius:8px;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:600;color:var(--muted);">👁️ ${isEn ? 'Show Answer' : 'সঠিক উত্তর দেখুন'}</button>`
+      );
+    }
+    const card = document.getElementById('resultCard');
+    card.className = 'result-card ' + type;
+    document.getElementById('resultIcon').textContent = '';
+    document.getElementById('resultText').innerHTML = displayResult;
+    card.style.display = 'block';
+    stats.total++;
+    if (type === 'correct') stats.correct++;
+    else if (type === 'incorrect') stats.incorrect++;
+    updateStats();
+    history.unshift({ question, userAns, correctAnswer, result, type, time: new Date().toLocaleTimeString('bn-BD') });
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = isEn ? 'Next Question →' : 'পরবর্তী প্রশ্ন →';
+    nextBtn.style.display = 'block';
+    document.getElementById('submitBtn').disabled = false;
+  }
+
+  function nextQuestion() {
+    const isEn = currentLang === 'en';
+    const next = (currentQIndex + 1) % database.length;
+    document.getElementById('questionSelect').value = next;
+    currentQIndex = next;
+    document.getElementById('questionText').textContent = database[currentQIndex].q;
+    document.getElementById('userAnswer').value = '';
+    document.getElementById('userAnswer').placeholder = isEn ? 'Write your answer here...' : 'এখানে উত্তর লিখুন...';
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('evalError').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = isEn ? '🔍 Check Answer' : '🔍 উত্তর যাচাই করুন';
+  }
+
+  function updateStats() {
+    document.getElementById('correctCount').textContent = stats.correct;
+    document.getElementById('incorrectCount').textContent = stats.incorrect;
+    document.getElementById('totalCount').textContent = stats.total;
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (history.length === 0) {
+      list.innerHTML = '';
+      return;
+    }
+    list.innerHTML = history.map(h => `
+      <div class="history-item ${h.type}">
+        <div class="hi-question">❓ ${escHtml(h.question)}</div>
+        <div class="hi-answer">আপনি বলেছিলেন: ${escHtml(h.userAns)}</div>
+        <div class="hi-result ${h.type}">${h.type === 'correct' ? '✅ সঠিক' : h.type === 'incorrect' ? '❌ ভুল' : '⚠️ আংশিক'} — ${h.time}</div>
+      </div>
+    `).join('');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'Enter') evaluateAnswer();
+  });
+
+  // ─── Practice Mode ────────────────────────────────────────
+  let practiceQueue = [];
+  let practiceIndex = 0;
+  let practiceCorrect = 0;
+  let practiceTotal = 0;
+
+  function initPracticeSetup() {
+    document.getElementById('practiceSetup').style.display = 'block';
+    document.getElementById('practiceArea').style.display = 'none';
+    document.getElementById('practiceSummary').style.display = 'none';
+    const list = document.getElementById('practiceCheckList');
+    const isEn = currentLang === 'en';
+    if (database.length === 0) {
+      list.innerHTML = '<div class="empty-state">📭 ' + (isEn ? 'No questions in database.' : 'ডেটাবেজে কোনো প্রশ্ন নেই।') + '</div>';
+      return;
+    }
+    list.innerHTML = database.map((item, i) => `
+      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; padding:10px 12px; background:var(--surface); border:1.5px solid var(--border); border-radius:8px; transition:border-color 0.2s;">
+        <input type="checkbox" class="practice-chk" value="${i}" checked style="margin-top:3px; width:16px; height:16px; cursor:pointer; flex-shrink:0;">
+        <span style="font-size:14px; line-height:1.5;">${i+1}. ${escHtml(item.q)}</span>
+      </label>
+    `).join('');
+  }
+
+  function selectAllPractice() {
+    const isEn = currentLang === 'en';
+    const all = document.querySelectorAll('.practice-chk');
+    const allChecked = [...all].every(c => c.checked);
+    all.forEach(c => c.checked = !allChecked);
+    const btn = document.querySelector('[onclick="selectAllPractice()"]');
+    if (btn) btn.textContent = allChecked ? (isEn ? 'Select All' : 'সব সিলেক্ট') : (isEn ? 'Deselect All' : 'সব বাদ');
+  }
+
+  function deselectAllPractice() {
+    document.querySelectorAll('.practice-chk').forEach(c => c.checked = false);
+  }
+
+  function startPractice() {
+    const checked = [...document.querySelectorAll('.practice-chk:checked')].map(c => parseInt(c.value));
+    if (checked.length === 0) { alert(currentLang === 'en' ? 'Select at least one question!' : 'অন্তত একটি প্রশ্ন সিলেক্ট করুন!'); return; }
+    practiceQueue = checked.map(i => ({ ...database[i], origIndex: i }));
+    if (document.getElementById('randomOrder').checked) {
+      practiceQueue.sort(() => Math.random() - 0.5);
+    }
+    practiceIndex = 0;
+    practiceCorrect = 0;
+    practiceTotal = practiceQueue.length;
+    document.getElementById('practiceSetup').style.display = 'none';
+    document.getElementById('practiceArea').style.display = 'block';
+    document.getElementById('practiceSummary').style.display = 'none';
+    loadPracticeQ();
+  }
+
+  function loadPracticeQ() {
+    const q = practiceQueue[practiceIndex];
+    document.getElementById('practiceQText').textContent = q.q;
+    document.getElementById('practiceAnswer').value = '';
+    document.getElementById('practiceResult').style.display = 'none';
+    document.getElementById('practiceNextBtn').style.display = 'none';
+    document.getElementById('practiceStopBtn').style.display = 'none';
+    document.getElementById('practiceSubmitBtn').disabled = false;
+    document.getElementById('practiceAnswer').focus();
+    const isEn = currentLang === 'en';
+    document.getElementById('practiceQLabel').innerHTML = (isEn ? 'Question ' : 'প্রশ্ন ') + '<span id="practiceQNum">' + (practiceIndex + 1) + ' / ' + practiceTotal + '</span>';
+    document.getElementById('practiceAnsLabel').textContent = isEn ? 'Your Answer' : 'আপনার উত্তর';
+    const pct = (practiceIndex / practiceTotal) * 100;
+    document.getElementById('practiceBar').style.width = pct + '%';
+    document.getElementById('practiceProgressText').textContent = practiceIndex + ' / ' + practiceTotal + (isEn ? ' done' : ' সম্পন্ন');
+    document.getElementById('practiceScore').textContent = '✅ ' + practiceCorrect + (isEn ? ' correct' : ' সঠিক');
+    document.getElementById('practiceSubmitBtn').textContent = isEn ? '🔍 Check' : '🔍 যাচাই করুন';
+    document.getElementById('practiceAnswer').placeholder = isEn ? 'Write your answer...' : 'এখানে উত্তর লিখুন...';
+    document.getElementById('practiceNextBtn').querySelector('span').innerHTML = isEn ? '→ Next Question' : 'পরবর্তী প্রশ্ন →';
+    document.getElementById('practiceStopBtn').querySelector('span').innerHTML = isEn ? '✕ Stop' : 'বন্ধ করুন';
+  }
+
+  async function submitPracticeAnswer() {
+    const isEn = currentLang === 'en';
+    const userAns = document.getElementById('practiceAnswer').value.trim();
+    if (!userAns) { alert(isEn ? 'Write an answer!' : 'উত্তর লিখুন!'); return; }
+    const q = practiceQueue[practiceIndex];
+    document.getElementById('practiceSubmitBtn').disabled = true;
+    document.getElementById('practiceLoading').style.display = 'flex';
+    document.getElementById('practiceLoading').querySelector('span').textContent = isEn ? 'AI is evaluating...' : 'AI মূল্যায়ন করছে...';
+    document.getElementById('practiceResult').style.display = 'none';
+
+    const normalize = s => s.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[।,!?\.]/g, '');
+    if (normalize(userAns) === normalize(q.a)) {
+      practiceCorrect++;
+      document.getElementById('practiceLoading').style.display = 'none';
+      showPracticeResult(isEn ? '✅ Correct! Excellent!' : '✅ সঠিক! চমৎকার!', 'correct');
+      return;
+    }
+
+    const prompt = `You are a strict QA evaluator. Compare the user's answer with the correct answer by meaning only.
+Question: ${q.q}
+Correct Answer: ${q.a}
+User's Answer: ${userAns}
+Evaluation rules:
+- Ignore minor spelling or grammar differences
+- Respond in ${isEn ? 'English only' : 'the SAME language as the user answer'}
+- Respond in exactly ONE of these formats:
+  1. If correct: "✅ Correct!"
+  2. If incorrect: "❌ Incorrect.\nThe correct answer is: ${q.a}"
+  3. If partial: "⚠️ Partially correct." with brief note then correct answer
+- No extra commentary.`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 200,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const result = data.content.map(i => i.text || '').join('').trim();
+      let type = 'incorrect';
+      if (result.startsWith('✅')) { type = 'correct'; practiceCorrect++; }
+      else if (result.startsWith('⚠️')) type = 'partial';
+      showPracticeResult(result, type);
+    } catch(e) {
+      const isEn = currentLang === 'en';
+      showPracticeResult(isEn ? '❌ Error. Go to next question.' : '❌ সমস্যা হয়েছে। পরবর্তী প্রশ্নে যান।', 'incorrect');
+    }
+  }
+
+  function showPracticeResult(result, type) {
+    const isEn = currentLang === 'en';
+    document.getElementById('practiceLoading').style.display = 'none';
+    const q = practiceQueue[practiceIndex];
+    let display = result.replace(/\n/g, '<br>');
+    if (type === 'incorrect' || type === 'partial') {
+      const showTxt = isEn ? '👁️ Show' : '👁️ দেখুন';
+      let replaced = display.replace(
+        /(সঠিক উত্তর:|The correct answer is:)(.*)/,
+        '$1 <span id="pBlurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;">$2</span><br><button onclick="revealPAns()" id="pRevealBtn" style="margin-top:8px;padding:5px 14px;border:1.5px solid #ddd5c0;border-radius:7px;background:transparent;cursor:pointer;font-family:\'Hind Siliguri\',sans-serif;font-size:12px;font-weight:600;color:#7a6e5a;">' + showTxt + '</button>'
+      );
+      if (replaced === display) {
+        replaced += '<br><br>' + (isEn ? 'Correct answer:' : 'সঠিক উত্তর:') + ' <span id="pBlurAns" style="filter:blur(5px);user-select:none;transition:filter 0.3s;">' + escHtml(q.a) + '</span><br><button onclick="revealPAns()" id="pRevealBtn" style="margin-top:8px;padding:5px 14px;border:1.5px solid #ddd5c0;border-radius:7px;background:transparent;cursor:pointer;font-family:\'Hind Siliguri\',sans-serif;font-size:12px;font-weight:600;color:#7a6e5a;">' + showTxt + '</button>';
+      }
+      display = replaced;
+    }
+    const card = document.getElementById('practiceResult');
+    card.className = 'result-card ' + type;
+    document.getElementById('practiceResultText').innerHTML = display;
+    card.style.display = 'block';
+    document.getElementById('practiceScore').textContent = '✅ ' + practiceCorrect + (isEn ? ' correct' : ' সঠিক');
+    document.getElementById('practiceNextBtn').style.display = 'block';
+    document.getElementById('practiceStopBtn').style.display = 'block';
+  }
+
+  function revealPAns() {
+    const isEn = currentLang === 'en';
+    const el = document.getElementById('pBlurAns');
+    const btn = document.getElementById('pRevealBtn');
+    if (!el) return;
+    if (el.style.filter === 'none') {
+      el.style.filter = 'blur(5px)'; el.style.userSelect = 'none';
+      btn.textContent = isEn ? '👁️ Show' : '👁️ দেখুন';
+    } else {
+      el.style.filter = 'none'; el.style.userSelect = 'text';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
+    }
+  }
+
+  function nextPracticeQ() {
+    const isEn = currentLang === 'en';
+    practiceIndex++;
+    const pct = (practiceIndex / practiceTotal) * 100;
+    document.getElementById('practiceBar').style.width = pct + '%';
+    document.getElementById('practiceProgressText').textContent = practiceIndex + ' / ' + practiceTotal + (isEn ? ' done' : ' সম্পন্ন');
+    if (practiceIndex >= practiceTotal) {
+      showPracticeSummary();
+    } else {
+      loadPracticeQ();
+    }
+  }
+
+  function showPracticeSummary() {
+    const isEn = currentLang === 'en';
+    document.getElementById('practiceArea').style.display = 'none';
+    document.getElementById('practiceSummary').style.display = 'block';
+    const pct = Math.round((practiceCorrect / practiceTotal) * 100);
+    document.querySelector('#practiceSummary .q-text').textContent = isEn ? 'Practice Complete!' : 'প্র্যাকটিস শেষ!';
+    document.querySelector('#practiceSummary .btn-primary').textContent = isEn ? '🔄 Start Again' : '🔄 আবার শুরু করুন';
+    document.getElementById('summaryText').innerHTML = isEn
+      ? 'Total: <b>' + practiceTotal + '</b> &nbsp;|&nbsp; Correct: <b style="color:#2c5f2e">' + practiceCorrect + '</b> &nbsp;|&nbsp; Wrong: <b style="color:#c0392b">' + (practiceTotal - practiceCorrect) + '</b><br><br>Score: <b style="font-size:22px;">' + pct + '%</b>'
+      : 'মোট প্রশ্ন: <b>' + practiceTotal + '</b> &nbsp;|&nbsp; সঠিক: <b style="color:#2c5f2e">' + practiceCorrect + '</b> &nbsp;|&nbsp; ভুল: <b style="color:#c0392b">' + (practiceTotal - practiceCorrect) + '</b><br><br>স্কোর: <b style="font-size:22px;">' + pct + '%</b>';
+  }
+
+  function stopPractice() { showPracticeSummary(); }
+
+  function resetPractice() {
+    document.getElementById('practiceSummary').style.display = 'none';
+    initPracticeSetup();
+  }
+
+  // ─── Main Search ──────────────────────────────────────────
+  function doMainSearch() {
+    const isEn = currentLang === 'en';
+    const q = document.getElementById('mainSearch').value.trim().toLowerCase();
+    const countEl = document.getElementById('mainSearchCount');
+    const resultsEl = document.getElementById('mainSearchResults');
+
+    if (!q) {
+      countEl.textContent = isEn ? `Total: ${database.length} questions` : `মোট প্রশ্ন: ${database.length}টি`;
+      resultsEl.innerHTML = database.length === 0
+        ? '<div class="empty-state">📭 ' + (isEn ? 'No questions yet.' : 'ডেটাবেজে কোনো প্রশ্ন নেই।') + '</div>'
+        : database.map((item, i) => buildSearchCard(item, i, '')).join('');
+      return;
+    }
+
+    const highlight = (text, term) => {
+      const esc = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return escHtml(text).replace(new RegExp(`(${esc})`, 'gi'),
+        '<mark style="background:rgba(184,134,11,0.35);border-radius:3px;padding:0 2px;font-weight:600;">$1</mark>');
+    };
+
+    const results = database
+      .map((item, i) => ({ ...item, i }))
+      .filter(item => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q));
+
+    countEl.textContent = results.length > 0
+      ? `🔍 "${q}" — ${results.length} ${isEn ? 'result(s)' : 'টি ফলাফল'}`
+      : `🔍 "${q}" — ${isEn ? 'No results' : 'কোনো ফলাফল নেই'}`;
+
+    if (results.length === 0) {
+      resultsEl.innerHTML = '<div class="empty-state">😕 ' + (isEn ? 'Nothing found. Try something else.' : 'কিছু পাওয়া যায়নি। অন্য কিছু লিখুন।') + '</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = results.map(item => buildSearchCard(item, item.i, q, highlight)).join('');
+  }
+
+  function buildSearchCard(item, i, q, highlight) {
+    const isEn = currentLang === 'en';
+    const qText = q && highlight ? highlight(item.q, q) : escHtml(item.q);
+    const aText = q && highlight ? highlight(item.a, q) : escHtml(item.a);
+    return `
+      <div class="db-item" style="flex-direction:column; gap:8px;">
+        <div style="font-size:15px; font-weight:600; color:var(--text);">${i+1}. ${qText}</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div id="srch-ans-${i}" style="filter:blur(4px); user-select:none; transition:filter 0.3s; font-size:14px; color:var(--correct); flex:1;">✓ ${aText}</div>
+          <button onclick="toggleSrchAns(${i})" id="srch-btn-${i}"
+            style="font-size:11px; padding:3px 10px; border:1px solid var(--border); border-radius:6px; background:transparent; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif; white-space:nowrap; flex-shrink:0;">
+            👁️ ${isEn ? 'Show' : 'দেখুন'}
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function toggleSrchAns(i) {
+    const isEn = currentLang === 'en';
+    const el = document.getElementById(`srch-ans-${i}`);
+    const btn = document.getElementById(`srch-btn-${i}`);
+    if (!el) return;
+    if (el.style.filter === 'none') {
+      el.style.filter = 'blur(4px)'; el.style.userSelect = 'none';
+      btn.textContent = isEn ? '👁️ Show' : '👁️ দেখুন';
+    } else {
+      el.style.filter = 'none'; el.style.userSelect = 'text';
+      btn.textContent = isEn ? '🙈 Hide' : '🙈 লুকান';
+    }
+  }
+
+  // ─── Multi-Note System ────────────────────────────────────
+  const NOTES_KEY = 'proshnomala_notes';
+  let notes = [];
+  let noteTimers = {};
+
+  async function saveNotes() {
+    const json = JSON.stringify(notes);
+    try { localStorage.setItem(NOTES_KEY, json); } catch(e) {}
+    try { await window.storage.set(NOTES_KEY, json); } catch(e) {}
+    // Firebase save
+    if (window.firebaseSaveNotes) {
+      window._currentNotes = notes;
+      await window.firebaseSaveNotes(notes);
+    }
+  }
+
+  async function loadNote() {
+    let loaded = false;
+
+    // Try Firebase first
+    if (window.firebaseLoadNotes) {
+      try {
+        const data = await window.firebaseLoadNotes();
+        if (data && Array.isArray(data) && data.length > 0) {
+          notes = data;
+          window._currentNotes = data;
+          loaded = true;
+        }
+      } catch(e) {}
+    }
+
+    if (!loaded) {
+      try {
+        const r = await window.storage.get(NOTES_KEY);
+        if (r && r.value) { notes = JSON.parse(r.value); loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) {
+      try {
+        const raw = localStorage.getItem(NOTES_KEY);
+        if (raw) { notes = JSON.parse(raw); loaded = true; }
+      } catch(e) {}
+    }
+    window.notes = notes;
+    renderNotes();
+  }
+
+  function renderNotes(filtered = null) {
+    const isEn = currentLang === 'en';
+    const list = document.getElementById('notesList');
+    if (!list) return;
+    const items = filtered !== null ? filtered : notes;
+    if (notes.length === 0) {
+      list.innerHTML = `<div class="empty-state">📭 ${isEn ? 'No notes yet. Click "New Note" above.' : 'কোনো নোট নেই। উপরে "নতুন নোট" বাটনে ক্লিক করুন।'}</div>`;
+      return;
+    }
+    if (items.length === 0) {
+      list.innerHTML = `<div class="empty-state">🔍 ${isEn ? 'No notes found.' : 'কোনো নোট পাওয়া যায়নি।'}</div>`;
+      return;
+    }
+    list.innerHTML = items.map((note) => `
+      <div class="db-item" style="flex-direction:column; align-items:stretch; gap:10px;" id="note-card-${note.id}">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="text" value="${escHtml(note.title)}" placeholder="${isEn ? 'Note title...' : 'নোটের শিরোনাম...'}"
+            style="flex:1; font-weight:600; font-size:15px; border:none; border-bottom:1.5px solid var(--border); border-radius:0; background:transparent; padding:4px 2px; outline:none;"
+            oninput="updateNoteTitle(${note.id}, this.value)" />
+          <button class="btn-danger" onclick="deleteNote(${note.id})">${isEn ? 'Delete' : 'মুছুন'}</button>
+        </div>
+        <textarea rows="5" placeholder="${isEn ? 'Write here...' : 'এখানে লিখুন...'}"
+          style="font-size:14px; line-height:1.8; margin-bottom:0;"
+          oninput="updateNoteText(${note.id}, this.value)"
+          id="note-text-${note.id}">${escHtml(note.text)}</textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:11px; color:var(--muted);" id="note-saved-${note.id}"></div>
+          ${note.date ? '<div style="font-size:10px; color:var(--muted);">🕐 ' + note.date + ' ' + note.time + '</div>' : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addNewNote() {
+    const isEn = currentLang === 'en';
+    const id = Date.now();
+    const num = notes.length + 1;
+    const title = isEn ? `Note ${num}` : `নোট ${toBanglaNum(num)}`;
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    notes.unshift({ id, title, text: '', ts: id, date, time });
+    renderNotes();
+    saveNotes();
+    setTimeout(() => {
+      const el = document.getElementById(`note-text-${id}`);
+      if (el) el.focus();
+    }, 100);
+  }
+
+  function toBanglaNum(n) {
+    return String(n).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+  }
+
+  function updateNoteTitle(id, val) {
+    const note = notes.find(n => n.id === id);
+    if (note) { note.title = val; scheduleSave(id); }
+  }
+
+  function updateNoteText(id, val) {
+    const note = notes.find(n => n.id === id);
+    if (note) { note.text = val; scheduleSave(id); }
+  }
+
+  function scheduleSave(id) {
+    clearTimeout(noteTimers[id]);
+    noteTimers[id] = setTimeout(async () => {
+      const isEn = currentLang === 'en';
+      await saveNotes();
+      const msg = document.getElementById(`note-saved-${id}`);
+      if (msg) {
+        msg.textContent = isEn ? '✓ Saved' : '✓ সেভ হয়েছে';
+        setTimeout(() => { msg.textContent = ''; }, 1800);
+      }
+    }, 600);
+  }
+
+  function deleteNote(id) {
+    notes = notes.filter(n => n.id !== id);
+    renderNotes();
+    saveNotes();
+  }
+
+  function searchNotes() {
+    const isEn = currentLang === 'en';
+    const q = document.getElementById('noteSearch').value.trim().toLowerCase();
+    const countEl = document.getElementById('noteSearchCount');
+    if (!q) { countEl.textContent = ''; renderNotes(); return; }
+    const results = notes.filter(n =>
+      n.title.toLowerCase().includes(q) || n.text.toLowerCase().includes(q)
+    );
+    countEl.textContent = results.length > 0
+      ? `🔍 "${q}" — ${results.length}${isEn ? ' note(s) found' : 'টি নোট পাওয়া গেছে'}`
+      : `🔍 "${q}" — ${isEn ? 'No notes found' : 'কোনো নোট পাওয়া যায়নি'}`;
+    renderNotes(results);
+  }
+
+  // ─── Hijri Date ───────────────────────────────────────────
+  function showHijriDate() {
+    try {
+      const hijri = new Intl.DateTimeFormat('en-u-ca-islamic', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      }).format(new Date());
+      document.getElementById('hijriDate').textContent = '🌙 ' + hijri;
+    } catch(e) {
+      // fallback manual calculation
+      const now = new Date();
+      const jd = Math.floor((now.getTime() / 86400000) + 2440587.5);
+      const l = jd - 1948440 + 10632;
+      const n = Math.floor((l - 1) / 10631);
+      const ll = l - 10631 * n + 354;
+      const j = Math.floor((10985 - ll) / 5316) * Math.floor((50 * ll) / 17719) +
+                Math.floor(ll / 5670) * Math.floor((43 * ll) / 15238);
+      const lll = ll - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) -
+                  Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+      const month = Math.floor((24 * lll) / 709);
+      const day = lll - Math.floor((709 * month) / 24);
+      const year = 30 * n + j - 30;
+      const months = ['Muharram','Safar','Rabi I','Rabi II','Jumada I','Jumada II',
+                      'Rajab','Sha\'ban','Ramadan','Shawwal','Dhul Qa\'dah','Dhul Hijjah'];
+      document.getElementById('hijriDate').textContent = `🌙 ${day} ${months[month-1]} ${year}`;
+    }
+  }
+
+  // ─── Language Toggle ──────────────────────────────────────
+  let currentLang = 'bn';
+
+  function toggleLang() {
+    currentLang = currentLang === 'bn' ? 'en' : 'bn';
+    applyLang();
+    localStorage.setItem('proshnomala_lang', currentLang);
+  }
+
+  function applyLang() {
+    const isEn = currentLang === 'en';
+    const btn = document.getElementById('langBtn');
+    if (btn) btn.textContent = isEn ? 'বাং' : 'EN';
+
+    // Update all elements with data-bn / data-en
+    document.querySelectorAll('[data-bn]').forEach(el => {
+      el.textContent = isEn ? el.dataset.en : el.dataset.bn;
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-placeholder-bn]').forEach(el => {
+      el.placeholder = isEn ? el.dataset.placeholderEn : el.dataset.placeholderBn;
+    });
+
+    // Update page title
+    document.title = 'Learn Arabic — Made by Imran';
+
+    // Re-render dynamic content
+    renderDB();
+    populateSelect();
+    renderNotes();
+    renderHistory();
+  }
+
+  // ─── Surah System ─────────────────────────────────────────
+  const SURAH_KEY = 'proshnomala_surahs';
+  let surahs = []; // [{ id, name, arabic, date, time, qaList: [{q,a,date,time}] }]
+  let activeSurahId = null;
+
+  async function saveSurahs() {
+    const json = JSON.stringify(surahs);
+    try { localStorage.setItem(SURAH_KEY, json); } catch(e) {}
+    try { await window.storage.set(SURAH_KEY, json); } catch(e) {}
+    if (window.firebaseSaveSurahs) {
+      window._currentSurahs = surahs;
+      await window.firebaseSaveSurahs(surahs);
+    }
+    showSaveIndicator();
+  }
+
+  async function loadSurahs() {
+    let loaded = false;
+    if (window.firebaseLoadSurahs) {
+      try {
+        const data = await window.firebaseLoadSurahs();
+        if (data && Array.isArray(data)) { surahs = data; window._currentSurahs = data; loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) {
+      try {
+        const r = await window.storage.get(SURAH_KEY);
+        if (r && r.value) { surahs = JSON.parse(r.value); loaded = true; }
+      } catch(e) {}
+    }
+    if (!loaded) {
+      try {
+        const raw = localStorage.getItem(SURAH_KEY);
+        if (raw) { surahs = JSON.parse(raw); loaded = true; }
+      } catch(e) {}
+    }
+    window.surahs = surahs;
+  }
+
+  function renderSurahList() {
+    document.getElementById('surah-list-view').style.display = 'block';
+    document.getElementById('surah-detail-view').style.display = 'none';
+    const grid = document.getElementById('surahGrid');
+    if (surahs.length === 0) {
+      grid.innerHTML = '<div class="empty-state">📭 কোনো সূরা নেই। উপরে "নতুন সূরা" বাটনে ক্লিক করুন।</div>';
+      return;
+    }
+    grid.innerHTML = surahs.map((s, i) => `
+      <div style="
+        background:var(--surface); border:1.5px solid var(--border); border-radius:12px;
+        padding:16px 18px; display:flex; align-items:center; gap:14px; cursor:pointer;
+        transition:border-color 0.2s, box-shadow 0.2s; animation:fadeUp 0.3s ease both;"
+        onclick="openSurahDetail(${s.id})"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.boxShadow='0 4px 16px rgba(184,134,11,0.12)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        <div style="
+          width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--text),#3a3020);
+          color:var(--gold); font-family:'Crimson Pro',serif; font-size:16px; font-weight:700;
+          display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          ${i+1}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:16px; color:var(--text); margin-bottom:2px;">${escHtml(s.name)}</div>
+          ${s.arabic ? `<div style="font-size:18px; color:var(--gold); direction:rtl; text-align:left;">${escHtml(s.arabic)}</div>` : ''}
+          <div style="font-size:12px; color:var(--muted); margin-top:3px;">📝 ${s.qaList ? s.qaList.length : 0} টি প্রশ্ন</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;" onclick="event.stopPropagation()">
+          <button onclick="deleteSurah(${s.id})" class="btn-danger">মুছুন</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openSurahDetail(id) {
+    activeSurahId = id;
+    const s = surahs.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('surah-list-view').style.display = 'none';
+    document.getElementById('surah-detail-view').style.display = 'block';
+    document.getElementById('surahDetailName').textContent = s.name + (s.arabic ? ' — ' + s.arabic : '');
+    document.getElementById('surahAddQAForm').style.display = 'none';
+    renderSurahQAList(s);
+    document.querySelector('main').scrollTop = 0;
+  }
+
+  function renderSurahQAList(s) {
+    const list = document.getElementById('surahQAList');
+    const count = s.qaList ? s.qaList.length : 0;
+    document.getElementById('surahDetailCount').textContent = count + ' টি প্রশ্ন-উত্তর';
+    if (count === 0) {
+      list.innerHTML = '<div class="empty-state">📭 এই সূরায় এখনো কোনো প্রশ্ন নেই।<br>উপরে "✚ প্রশ্ন যোগ" করুন।</div>';
+      return;
+    }
+    list.innerHTML = s.qaList.map((item, i) => `
+      <div class="db-item" id="sq-${s.id}-${i}">
+        <div class="db-item-content">
+          <div id="sq-view-${s.id}-${i}">
+            <div class="db-item-q">${i+1}. ${escHtml(item.q)}</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
+              <div class="db-item-a" id="sq-ans-${s.id}-${i}" style="filter:blur(4px); user-select:none; transition:filter 0.3s;">${escHtml(item.a)}</div>
+              <button onclick="toggleSurahAns('${s.id}',${i})" id="sq-btn-${s.id}-${i}"
+                style="font-size:11px; padding:3px 10px; border:1px solid var(--border); border-radius:6px; background:transparent; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif; white-space:nowrap;">
+                👁️ দেখুন
+              </button>
+            </div>
+            ${item.date ? `<div style="font-size:10px; color:var(--muted); margin-top:4px; text-align:right;">🕐 ${item.date} ${item.time}</div>` : ''}
+          </div>
+          <div id="sq-edit-${s.id}-${i}" style="display:none; margin-top:6px;">
+            <input type="text" id="sq-eq-${s.id}-${i}" value="${escHtml(item.q)}" style="margin-bottom:6px; font-size:14px; width:100%;" />
+            <input type="text" id="sq-ea-${s.id}-${i}" value="${escHtml(item.a)}" style="margin-bottom:8px; font-size:14px; width:100%;" />
+            <div style="display:flex; gap:8px;">
+              <button onclick="saveSurahEdit('${s.id}',${i})" style="padding:6px 14px; background:var(--text); color:var(--bg); border:none; border-radius:7px; font-family:'Hind Siliguri',sans-serif; font-size:13px; font-weight:700; cursor:pointer;">✅ সেভ</button>
+              <button onclick="cancelSurahEdit('${s.id}',${i})" style="padding:6px 14px; background:transparent; border:1.5px solid var(--border); border-radius:7px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">বাতিল</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button onclick="startSurahEdit('${s.id}',${i})" id="sq-edit-btn-${s.id}-${i}" style="padding:5px 12px; background:transparent; border:1.5px solid var(--border); border-radius:6px; font-size:12px; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif;">✏️ এডিট</button>
+          <button class="btn-danger" onclick="deleteSurahQA('${s.id}',${i})">মুছুন</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleSurahAns(sid, i) {
+    const el = document.getElementById(`sq-ans-${sid}-${i}`);
+    const btn = document.getElementById(`sq-btn-${sid}-${i}`);
+    if (!el) return;
+    if (el.style.filter === 'none') {
+      el.style.filter = 'blur(4px)'; el.style.userSelect = 'none';
+      btn.textContent = '👁️ দেখুন';
+    } else {
+      el.style.filter = 'none'; el.style.userSelect = 'text';
+      btn.textContent = '🙈 লুকান';
+    }
+  }
+
+  function startSurahEdit(sid, i) {
+    document.getElementById(`sq-view-${sid}-${i}`).style.display = 'none';
+    document.getElementById(`sq-edit-${sid}-${i}`).style.display = 'block';
+    document.getElementById(`sq-edit-btn-${sid}-${i}`).style.display = 'none';
+  }
+
+  function cancelSurahEdit(sid, i) {
+    document.getElementById(`sq-view-${sid}-${i}`).style.display = 'block';
+    document.getElementById(`sq-edit-${sid}-${i}`).style.display = 'none';
+    document.getElementById(`sq-edit-btn-${sid}-${i}`).style.display = 'block';
+  }
+
+  async function saveSurahEdit(sid, i) {
+    const s = surahs.find(x => x.id == sid);
+    if (!s) return;
+    const newQ = document.getElementById(`sq-eq-${sid}-${i}`).value.trim();
+    const newA = document.getElementById(`sq-ea-${sid}-${i}`).value.trim();
+    if (!newQ || !newA) { alert('দুটো ফিল্ড পূরণ করুন!'); return; }
+    s.qaList[i].q = newQ;
+    s.qaList[i].a = newA;
+    await saveSurahs();
+    renderSurahQAList(s);
+  }
+
+  async function deleteSurahQA(sid, i) {
+    const s = surahs.find(x => x.id == sid);
+    if (!s) return;
+    if (!confirm('এই প্রশ্নটি মুছে ফেলবেন?')) return;
+    s.qaList.splice(i, 1);
+    await saveSurahs();
+    renderSurahQAList(s);
+  }
+
+  function closeSurahDetail() {
+    activeSurahId = null;
+    renderSurahList();
+  }
+
+  function openAddQAToSurah() {
+    document.getElementById('surahAddQAForm').style.display = 'block';
+    document.getElementById('surahNewQ').focus();
+    document.querySelector('main').scrollTop = 0;
+  }
+
+  async function addQAToSurah() {
+    const q = document.getElementById('surahNewQ').value.trim();
+    const a = document.getElementById('surahNewA').value.trim();
+    if (!q || !a) { alert('প্রশ্ন ও উত্তর দুটোই দিন!'); return; }
+    const s = surahs.find(x => x.id === activeSurahId);
+    if (!s) return;
+    if (!s.qaList) s.qaList = [];
+    const now = new Date();
+    s.qaList.push({ q, a, date: now.toLocaleDateString('en-GB'), time: now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true }) });
+    document.getElementById('surahNewQ').value = '';
+    document.getElementById('surahNewA').value = '';
+    await saveSurahs();
+    renderSurahQAList(s);
+    document.getElementById('surahAddQAForm').style.display = 'none';
+  }
+
+  function openAddSurahModal() {
+    document.getElementById('newSurahName').value = '';
+    document.getElementById('newSurahArabic').value = '';
+    document.getElementById('addSurahModal').classList.add('show');
+    setTimeout(() => document.getElementById('newSurahName').focus(), 100);
+  }
+
+  function closeAddSurahModal() {
+    document.getElementById('addSurahModal').classList.remove('show');
+  }
+
+  async function addSurah() {
+    const name = document.getElementById('newSurahName').value.trim();
+    const arabic = document.getElementById('newSurahArabic').value.trim();
+    if (!name) { alert('সূরার নাম দিন!'); return; }
+    const now = new Date();
+    surahs.push({
+      id: Date.now(),
+      name, arabic,
+      date: now.toLocaleDateString('en-GB'),
+      time: now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true }),
+      qaList: []
+    });
+    closeAddSurahModal();
+    await saveSurahs();
+    renderSurahList();
+  }
+
+  async function deleteSurah(id) {
+    const s = surahs.find(x => x.id === id);
+    if (!s) return;
+    if (!confirm(`"${s.name}" সূরাটি এবং এর সকল প্রশ্ন মুছে ফেলবেন?`)) return;
+    surahs = surahs.filter(x => x.id !== id);
+    await saveSurahs();
+    renderSurahList();
+  }
+
+  document.getElementById('addSurahModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddSurahModal();
+  });
+
+  // ─── Init ─────────────────────────────────────────────────
+  currentLang = localStorage.getItem('proshnomala_lang') || 'bn';
+  window.renderDB = renderDB;
+  window.renderNotes = renderNotes;
+  window.renderSurahList = renderSurahList;
+  window.populateSelect = populateSelect;
+  window.initPracticeSetup = initPracticeSetup;
+  window.loadDatabase = loadDatabase;
+  window.database = database;
+  window.notes = notes;
+  window.surahs = surahs;
+  loadDatabase();
+  loadSurahs();
+  showHijriDate();
+  setTimeout(() => applyLang(), 300);
+</script>
+</body>
+</html>
