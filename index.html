@@ -792,7 +792,15 @@
                border-radius:8px; padding:10px; box-sizing:border-box; line-height:1.5; margin-bottom:0;"
         placeholder="এখানে paste করুন..."
         oninput="document.getElementById('importCharCount').textContent = this.value.length > 0 ? '📏 ' + this.value.length + ' character paste হয়েছে' : ''"></textarea>
-      <div id="importCharCount" style="font-size:11px; color:var(--gold); margin-top:5px; text-align:center; font-weight:600;"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:5px;">
+        <div id="importCharCount" style="font-size:11px; color:var(--gold); font-weight:600;"></div>
+        <button onclick="document.getElementById('importText').value=''; document.getElementById('importCharCount').textContent=''; document.getElementById('importError').style.display='none'; document.getElementById('importSuccess').style.display='none';"
+          style="font-size:11px; padding:3px 10px; border:1.5px solid var(--border); border-radius:6px; background:transparent; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif; transition:all 0.2s;"
+          onmouseover="this.style.borderColor='var(--incorrect)';this.style.color='var(--incorrect)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          🗑️ মুছুন
+        </button>
+      </div>
       <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="doImportFromText()">✅ Import করুন</button>
     </div>
 
@@ -812,6 +820,19 @@
       <button class="modal-cancel" onclick="closeDataModal()">বন্ধ করুন</button>
       <button class="btn-import-do" id="dataModalCopy" style="display:none;">📋 কপি করুন</button>
       <button class="btn-import-do" id="dataModalAction" style="display:none;">✅ Import করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Surah Delete Confirm Modal -->
+<div class="modal-overlay" id="surahConfirmModal">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">মুছে ফেলবেন?</div>
+    <div class="modal-msg" id="surahDeleteName"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="cancelSurahDelete()">❌ বাতিল</button>
+      <button class="modal-confirm" onclick="confirmSurahDelete()">🗑️ হ্যাঁ, মুছুন</button>
     </div>
   </div>
 </div>
@@ -902,17 +923,15 @@
     <div class="db-add-form" id="practiceSetup">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
         <h3 style="color:var(--gold); font-size:12px; letter-spacing:0.5px; text-transform:uppercase; font-weight:700;" data-bn="প্রশ্ন বেছে নিন" data-en="Select Questions">প্রশ্ন বেছে নিন</h3>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--muted); padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; background:var(--surface);">
+            <input type="checkbox" id="randomOrder" style="width:15px; height:15px; cursor:pointer;"> <span data-bn="এলোমেলো" data-en="Random">এলোমেলো</span>
+          </label>
           <button class="btn-outline" onclick="selectAllPractice()" data-bn="সব সিলেক্ট" data-en="Select All">সব সিলেক্ট</button>
+          <button class="btn-primary" onclick="startPractice()" data-bn="▶ শুরু করুন" data-en="▶ Start">▶ শুরু করুন</button>
         </div>
       </div>
-      <div id="practiceCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; color:var(--muted);">
-          <input type="checkbox" id="randomOrder" style="width:16px; height:16px; cursor:pointer;"> <span data-bn="এলোমেলো ক্রমে" data-en="Random Order">এলোমেলো ক্রমে</span>
-        </label>
-        <button class="btn-primary" onclick="startPractice()" style="flex:1; min-width:120px;" data-bn="▶ শুরু করুন" data-en="▶ Start">▶ শুরু করুন</button>
-      </div>
+      <div id="practiceCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:4px;"></div>
     </div>
 
     <div id="practiceArea" style="display:none;">
@@ -2566,7 +2585,6 @@ Evaluation rules:
   async function deleteSurahQA(sid, i) {
     const s = surahs.find(x => x.id == sid);
     if (!s) return;
-    if (!confirm('এই প্রশ্নটি মুছে ফেলবেন?')) return;
     s.qaList.splice(i, 1);
     await saveSurahs();
     renderSurahQAList(s);
@@ -2630,10 +2648,24 @@ Evaluation rules:
   async function deleteSurah(id) {
     const s = surahs.find(x => x.id === id);
     if (!s) return;
-    if (!confirm(`"${s.name}" সূরাটি এবং এর সকল প্রশ্ন মুছে ফেলবেন?`)) return;
+    window._pendingSurahDeleteId = id;
+    document.getElementById('surahDeleteName').textContent = '"' + s.name + '" সূরাটি এবং এর সকল প্রশ্ন মুছে ফেলবেন?';
+    document.getElementById('surahConfirmModal').classList.add('show');
+  }
+
+  async function confirmSurahDelete() {
+    const id = window._pendingSurahDeleteId;
+    document.getElementById('surahConfirmModal').classList.remove('show');
+    if (!id) return;
     surahs = surahs.filter(x => x.id !== id);
+    window._pendingSurahDeleteId = null;
     await saveSurahs();
     renderSurahList();
+  }
+
+  function cancelSurahDelete() {
+    window._pendingSurahDeleteId = null;
+    document.getElementById('surahConfirmModal').classList.remove('show');
   }
 
   document.getElementById('addSurahModal').addEventListener('click', function(e) {
@@ -2651,6 +2683,20 @@ Evaluation rules:
   window.database = database;
   window.notes = notes;
   window.surahs = surahs;
+  window.deleteSurah = deleteSurah;
+  window.deleteSurahQA = deleteSurahQA;
+  window.openSurahDetail = openSurahDetail;
+  window.closeSurahDetail = closeSurahDetail;
+  window.openAddQAToSurah = openAddQAToSurah;
+  window.addQAToSurah = addQAToSurah;
+  window.toggleSurahAns = toggleSurahAns;
+  window.startSurahEdit = startSurahEdit;
+  window.cancelSurahEdit = cancelSurahEdit;
+  window.saveSurahEdit = saveSurahEdit;
+  window.confirmSurahDelete = confirmSurahDelete;
+  window.cancelSurahDelete = cancelSurahDelete;
+  window.closeAddSurahModal = closeAddSurahModal;
+  window.addSurah = addSurah;
   loadDatabase();
   loadSurahs();
   showHijriDate();
