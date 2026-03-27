@@ -730,8 +730,11 @@
       <span>Made by Imran</span>
     </div>
   </div>
-  <div class="stats-bar">
-    <div style="text-align:right; line-height:1.6;">
+  <div class="stats-bar" style="display:flex; align-items:center; gap:10px;">
+    <!-- Big time -->
+    <div id="liveTime" onclick="openCalendarModal()" style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Crimson Pro',serif; letter-spacing:1px; line-height:1; cursor:pointer;"></div>
+    <!-- Dates -->
+    <div style="text-align:left; line-height:1.6; cursor:pointer;" onclick="openCalendarModal()" title="ক্যালেন্ডার দেখুন">
       <div id="hijriDate" style="font-size:10px; color:rgba(245,240,232,0.7); letter-spacing:0.3px;"></div>
       <div id="banglaDate" style="font-size:10px; color:rgba(245,240,232,0.55); letter-spacing:0.3px;"></div>
     </div>
@@ -1172,6 +1175,37 @@
   </div>
 
 
+  <!-- AI Chat Panel -->
+  <div class="panel" id="panel-ai">
+    <div style="display:flex; flex-direction:column; height:calc(100dvh - 44px - 60px - 32px);">
+
+      <!-- Header -->
+      <div style="margin-bottom:14px;">
+        <div class="section-title" style="font-size:20px; margin-bottom:4px;">🤖 AI সাহায্যকারী</div>
+        <div class="section-sub" style="margin-bottom:0; font-size:13px;">আরবি, ইসলাম বা যেকোনো বিষয়ে প্রশ্ন করুন</div>
+      </div>
+
+      <!-- Chat messages -->
+      <div id="ai-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-bottom:8px; -webkit-overflow-scrolling:touch;">
+        <div id="ai-welcome" style="background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:16px; font-size:14px; line-height:1.8; color:var(--text);">
+          👋 আস-সালামু আলাইকুম! আমি আপনার AI সাহায্যকারী। আরবি ভাষা, ইসলামিক জ্ঞান বা যেকোনো বিষয়ে আমাকে প্রশ্ন করতে পারেন।
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div style="display:flex; gap:8px; padding-top:10px; border-top:1.5px solid var(--border); flex-shrink:0;">
+        <textarea id="ai-input" rows="2" spellcheck="false"
+          placeholder="এখানে প্রশ্ন লিখুন..."
+          style="flex:1; font-size:14px; line-height:1.6; resize:none; border-radius:10px; padding:10px 14px; margin-bottom:0;"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendAIMessage(); }"></textarea>
+        <button onclick="sendAIMessage()" id="ai-send-btn"
+          style="background:var(--text); color:var(--bg); border:none; border-radius:10px; padding:10px 16px; font-size:18px; cursor:pointer; flex-shrink:0; transition:all 0.2s; align-self:flex-end;">➤</button>
+      </div>
+
+    </div>
+  </div>
+
+
 </main>
 
 <!-- Bottom Navigation -->
@@ -1199,6 +1233,10 @@
   <button class="tab" onclick="switchTab('history')">
     <span class="tab-icon">📝</span>
     <span class="tab-label" data-bn="নোটস" data-en="Notes">নোটস</span>
+  </button>
+  <button class="tab" onclick="switchTab('ai')">
+    <span class="tab-icon">🤖</span>
+    <span class="tab-label" data-bn="AI চ্যাট" data-en="AI Chat">AI চ্যাট</span>
   </button>
 </div>
 
@@ -2390,7 +2428,7 @@
             </div>
           </div>
           <div style="display:${isOpen ? 'flex' : 'none'}; flex-direction:column; gap:10px; padding:12px;">
-            ${count === 0 ? `<div style="text-align:center; color:var(--muted); font-size:13px; padding:16px 0;">📭 এই ফোল্ডারে কোনো নোট নেই</div>` :
+            ${count === 0 ? `<div style="text-align:center; color:var(--muted); font-size:13px; padding:16px 0;">${isEn ? '📭 No notes in this folder' : '📭 এই ফোল্ডারে কোনো নোট নেই'}</div>` :
               folderNotes.map(note => renderNoteCard(note, isEn)).join('')
             }
           </div>
@@ -2401,33 +2439,17 @@
   }
 
   function renderNoteCard(note, isEn) {
-    const folderOptions = noteFolders.map(f =>
-      `<option value="${escHtml(f)}" ${f === note.folder ? 'selected' : ''}>${escHtml(f)}</option>`
-    ).join('');
+    const preview = note.text ? note.text.slice(0, 90) + (note.text.length > 90 ? '\u2026' : '') : (isEn ? 'Empty note' : '\u0996\u09be\u09b2\u09bf \u09a8\u09cb\u099f');
     return `
-      <div class="db-item" style="flex-direction:column; align-items:stretch; gap:10px; margin:0;" id="note-card-${note.id}">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <input type="text" value="${escHtml(note.title)}" placeholder="${isEn ? 'Note title...' : 'নোটের শিরোনাম...'}"
-            style="flex:1; font-weight:600; font-size:15px; border:none; border-bottom:1.5px solid var(--border); border-radius:0; background:transparent; padding:4px 2px; outline:none;"
-            oninput="updateNoteTitle(${note.id}, this.value)" />
-          <button class="btn-danger" onclick="deleteNote(${note.id})">${isEn ? 'Delete' : 'মুছুন'}</button>
+      <div class="db-item" style="flex-direction:column; align-items:stretch; gap:6px; margin:0; cursor:pointer;" id="note-card-${note.id}" onclick="openNoteFullscreen(${note.id})">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="font-weight:700; font-size:15px; color:var(--text); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${note.title || (isEn ? 'Untitled' : '\u09b6\u09bf\u09b0\u09cb\u09a8\u09be\u09ae \u09a8\u09c7\u0987')}</div>
+          <button class="btn-danger" onclick="event.stopPropagation(); deleteNote(${note.id})" style="flex-shrink:0;">${isEn ? 'Delete' : '\u09ae\u09c1\u099b\u09c1\u09a8'}</button>
         </div>
-        <textarea rows="5" placeholder="${isEn ? 'Write here...' : 'এখানে লিখুন...'}"
-          style="font-size:14px; line-height:1.8; margin-bottom:0;"
-          oninput="updateNoteText(${note.id}, this.value)"
-          id="note-text-${note.id}">${escHtml(note.text)}</textarea>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:11px; color:var(--muted);">📁</span>
-            <select onchange="moveNoteToFolder(${note.id}, this.value)"
-              style="font-size:12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'Hind Siliguri',sans-serif; padding:3px 6px; outline:none; cursor:pointer;">
-              ${folderOptions}
-            </select>
-          </div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-size:11px; color:var(--muted);" id="note-saved-${note.id}"></div>
-            ${note.date ? `<div style="font-size:10px; color:var(--muted);">🕐 ${note.date} ${note.time}</div>` : ''}
-          </div>
+        <div style="font-size:13px; color:var(--muted); line-height:1.6; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${escHtml(preview)}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:2px;">
+          <div style="font-size:11px; color:var(--muted);">\u{1F4C1} ${escHtml(note.folder || 'General')}</div>
+          ${note.date ? `<div style="font-size:10px; color:var(--muted);">\u{1F550} ${note.date} ${note.time}</div>` : ''}
         </div>
       </div>`;
   }
@@ -2608,13 +2630,8 @@
 
   // ─── Hijri Date ───────────────────────────────────────────
   function showHijriDate() {
-    // Hijri/Arabic date
-    try {
-      const hijri = new Intl.DateTimeFormat('en-u-ca-islamic', {
-        day: 'numeric', month: 'long', year: 'numeric'
-      }).format(new Date());
-      document.getElementById('hijriDate').textContent = '🌙 ' + hijri;
-    } catch(e) {
+    // Hijri/Arabic date — manual calculation (always reliable)
+    {
       const now = new Date();
       const jd = Math.floor((now.getTime() / 86400000) + 2440587.5);
       const l = jd - 1948440 + 10632;
@@ -2625,11 +2642,11 @@
       const lll = ll - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) -
                   Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
       const month = Math.floor((24 * lll) / 709);
-      const day = lll - Math.floor((709 * month) / 24);
+      const day = lll - Math.floor((709 * month) / 24) + 1; // +1 correction for moon sighting
       const year = 30 * n + j - 30;
-      const months = ['Muharram','Safar','Rabi I','Rabi II','Jumada I','Jumada II',
+      const months = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhirah',
                       'Rajab','Sha\'ban','Ramadan','Shawwal','Dhul Qa\'dah','Dhul Hijjah'];
-      document.getElementById('hijriDate').textContent = `🌙 ${day} ${months[month-1]} ${year}`;
+      document.getElementById('hijriDate').textContent = `🌙 ${day} ${months[month-1]} ${year} AH`;
     }
 
     // বাংলা পঞ্জিকা তারিখ (বৈশাখ, জ্যৈষ্ঠ...)
@@ -2651,7 +2668,7 @@
         [11,15], // পৌষ — Dec 15
         [0, 14], // মাঘ — Jan 14
         [1, 13], // ফাল্গুন — Feb 13
-        [2, 14], // চৈত্র — Mar 14
+        [2, 15], // চৈত্র — Mar 15
       ];
       const now = new Date();
       const gMonth = now.getMonth(); // 0-based
@@ -3057,5 +3074,599 @@
   showHijriDate();
   setTimeout(() => applyLang(), 300);
 </script>
+<!-- Calendar Modal -->
+<div class="modal-overlay" id="calendarModal" onclick="if(event.target===this)closeCalendarModal()" style="align-items:flex-start; padding-top:20px;">
+  <div style="background:var(--surface); border-radius:18px; width:94%; max-width:400px; overflow:hidden; border:1.5px solid var(--border); box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+    <!-- Modal Header -->
+    <div style="background:var(--text); padding:16px 18px 12px; position:relative;">
+      <button onclick="closeCalendarModal()" style="position:absolute;top:10px;right:12px;background:rgba(255,255,255,0.15);border:none;color:var(--bg);font-size:16px;width:28px;height:28px;border-radius:50%;cursor:pointer;">✕</button>
+      <div style="color:var(--gold);font-family:'Crimson Pro',serif;font-size:20px;font-weight:700;" id="cal-greg-month-year"></div>
+      <div style="color:rgba(245,240,232,0.7);font-size:11px;margin-top:3px;" id="cal-hijri-label"></div>
+      <div style="color:rgba(245,240,232,0.5);font-size:11px;" id="cal-bangla-label"></div>
+    </div>
+
+    <!-- Tab Switcher -->
+    <div style="display:flex; border-bottom:1.5px solid var(--border);">
+      <button onclick="switchCalTab('greg')" id="cal-tab-greg" style="flex:1;padding:10px 4px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Hind Siliguri',sans-serif;background:var(--gold);color:#fff;transition:all 0.2s;">📅 Gregorian</button>
+      <button onclick="switchCalTab('hijri')" id="cal-tab-hijri" style="flex:1;padding:10px 4px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Hind Siliguri',sans-serif;background:var(--surface2);color:var(--muted);transition:all 0.2s;">🌙 হিজরি</button>
+      <button onclick="switchCalTab('bangla')" id="cal-tab-bangla" style="flex:1;padding:10px 4px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Hind Siliguri',sans-serif;background:var(--surface2);color:var(--muted);transition:all 0.2s;">🪷 বাংলা</button>
+    </div>
+
+    <!-- Nav -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;">
+      <button onclick="calNav(-1)" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;">‹</button>
+      <div id="cal-nav-title" style="font-family:'Crimson Pro',serif;font-size:17px;font-weight:700;color:var(--text);"></div>
+      <button onclick="calNav(1)" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;">›</button>
+    </div>
+
+    <!-- Day headers -->
+    <div id="cal-day-headers" style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 10px;gap:2px;"></div>
+
+    <!-- Calendar grid -->
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);padding:8px 10px 16px;gap:4px;"></div>
+  </div>
+</div>
+
+<script>
+  // ── Calendar Modal ──────────────────────────────────────────
+  let calTab = 'greg';
+  let calOffset = 0; // month offset from current
+
+  function openCalendarModal() {
+    calTab = 'greg';
+    calOffset = 0;
+    renderCalendar();
+    updateCalHeader();
+    document.getElementById('calendarModal').classList.add('show');
+  }
+
+  function closeCalendarModal() {
+    document.getElementById('calendarModal').classList.remove('show');
+  }
+
+  function switchCalTab(tab) {
+    calTab = tab;
+    calOffset = 0;
+    ['greg','hijri','bangla'].forEach(t => {
+      const btn = document.getElementById('cal-tab-' + t);
+      btn.style.background = t === tab ? 'var(--gold)' : 'var(--surface2)';
+      btn.style.color = t === tab ? '#fff' : 'var(--muted)';
+    });
+    renderCalendar();
+  }
+
+  function calNav(dir) {
+    calOffset += dir;
+    renderCalendar();
+  }
+
+  // ── Gregorian calendar ──────────────────────────────────────
+  function renderGregCalendar() {
+    const today = new Date();
+    const base = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
+    const year = base.getFullYear();
+    const month = base.getMonth();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('cal-nav-title').textContent = monthNames[month] + ' ' + year;
+
+    const dayHeaders = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    document.getElementById('cal-day-headers').innerHTML = dayHeaders.map(d =>
+      `<div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;">${d}</div>`
+    ).join('');
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let cells = '';
+    for (let i = 0; i < firstDay; i++) cells += `<div></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      const isFri = new Date(year, month, d).getDay() === 5;
+      const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const hasNote = !!localStorage.getItem('calNote_' + dateKey);
+      cells += `<div onclick="openDateNote('${dateKey}')" style="
+        text-align:center; padding:7px 2px; border-radius:8px; font-size:13px; font-weight:${isToday?'700':'500'};
+        background:${isToday ? 'var(--gold)' : 'transparent'};
+        color:${isToday ? '#fff' : isFri ? 'var(--accent2)' : 'var(--text)'};
+        border:${isToday ? 'none' : '1px solid transparent'};
+        cursor:pointer; position:relative;
+      ">${d}${hasNote ? '<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold);display:block;"></span>' : ''}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = cells;
+  }
+
+  // ── Hijri calendar ──────────────────────────────────────────
+  function gregToHijri(date) {
+    const jd = Math.floor((date.getTime() / 86400000) + 2440587.5);
+    const l = jd - 1948440 + 10632;
+    const n = Math.floor((l - 1) / 10631);
+    const ll = l - 10631 * n + 354;
+    const j = Math.floor((10985 - ll) / 5316) * Math.floor((50 * ll) / 17719) +
+              Math.floor(ll / 5670) * Math.floor((43 * ll) / 15238);
+    const lll = ll - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) -
+                Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+    const month = Math.floor((24 * lll) / 709);
+    const day = lll - Math.floor((709 * month) / 24) + 1;
+    const year = 30 * n + j - 30;
+    return { day, month, year };
+  }
+
+  function hijriToJD(hy, hm, hd) {
+    return Math.floor((11 * hy + 3) / 30) + 354 * hy + 30 * hm -
+           Math.floor((hm - 1) / 2) + hd + 1948440 - 385;
+  }
+
+  function hijriDaysInMonth(hy, hm) {
+    return hijriToJD(hy, hm + 1, 1) - hijriToJD(hy, hm, 1);
+  }
+
+  function renderHijriCalendar() {
+    const today = new Date();
+    const todayH = gregToHijri(today);
+    let hYear = todayH.year;
+    let hMonth = todayH.month + calOffset;
+    while (hMonth > 12) { hMonth -= 12; hYear++; }
+    while (hMonth < 1)  { hMonth += 12; hYear--; }
+    const hMonthNames = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhirah','Rajab',"Sha'ban",'Ramadan','Shawwal','Dhul Qa\'dah','Dhul Hijjah'];
+    document.getElementById('cal-nav-title').textContent = hMonthNames[hMonth-1] + ' ' + hYear + ' AH';
+
+    const dayHeaders = ['Ahad','Ithn','Thul','Arb','Kham','Jum','Sab'];
+    document.getElementById('cal-day-headers').innerHTML = dayHeaders.map(d =>
+      `<div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;">${d}</div>`
+    ).join('');
+
+    // Find what weekday the 1st of this hijri month falls on
+    const jd1 = hijriToJD(hYear, hMonth, 1);
+    const firstWeekday = ((jd1 + 1) % 7 + 7) % 7; // 0=Sun
+    const daysInHMonth = hijriDaysInMonth(hYear, hMonth);
+
+    let cells = '';
+    for (let i = 0; i < firstWeekday; i++) cells += `<div></div>`;
+    for (let d = 1; d <= daysInHMonth; d++) {
+      const isToday = d === todayH.day+0 && hMonth === todayH.month && hYear === todayH.year;
+      const weekday = (firstWeekday + d - 1) % 7;
+      const isFri = weekday === 5;
+      // Convert hijri date back to greg for note key
+      const jdD = hijriToJD(hYear, hMonth, d);
+      const gregD = new Date((jdD - 2440587.5) * 86400000);
+      const dateKey = `${gregD.getFullYear()}-${String(gregD.getMonth()+1).padStart(2,'0')}-${String(gregD.getDate()).padStart(2,'0')}`;
+      const hasNote = !!localStorage.getItem('calNote_' + dateKey);
+      cells += `<div onclick="openDateNote('${dateKey}')" style="
+        text-align:center; padding:7px 2px; border-radius:8px; font-size:13px; font-weight:${isToday?'700':'500'};
+        background:${isToday ? 'var(--gold)' : 'transparent'};
+        color:${isToday ? '#fff' : isFri ? 'var(--accent2)' : 'var(--text)'};
+        cursor:pointer; position:relative;
+      ">${d}${hasNote ? '<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold);display:block;"></span>' : ''}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = cells;
+  }
+
+  // ── Bangla calendar ─────────────────────────────────────────
+  function gregToBangla(date) {
+    const monthStarts = [
+      [3,14],[4,15],[5,15],[6,16],[7,16],[8,16],[9,16],[10,15],[11,15],[0,14],[1,13],[2,15]
+    ];
+    const bnMonths = ['বৈশাখ','জ্যৈষ্ঠ','আষাঢ়','শ্রাবণ','ভাদ্র','আশ্বিন','কার্তিক','অগ্রহায়ণ','পৌষ','মাঘ','ফাল্গুন','চৈত্র'];
+    const gYear = date.getFullYear();
+    for (let i = 0; i < monthStarts.length; i++) {
+      const [sm, sd] = monthStarts[i];
+      const [nm, nd] = monthStarts[(i + 1) % 12];
+      const startDate = new Date(gYear, sm, sd);
+      let endYear = gYear;
+      if (nm < sm || (nm === sm && nd < sd)) endYear = gYear + 1;
+      const endDate = new Date(endYear, nm, nd);
+      if (date >= startDate && date < endDate) {
+        const diff = Math.floor((date - startDate) / 86400000);
+        const bnDay = diff + 1;
+        let bnYear;
+        if (i === 0) bnYear = gYear - 593;
+        else if (sm > 3 || (sm === 3 && sd >= 14)) bnYear = gYear - 593;
+        else bnYear = gYear - 594;
+        return { day: bnDay, monthIdx: i, monthName: bnMonths[i], year: bnYear, startDate };
+      }
+    }
+    return null;
+  }
+
+  function renderBanglaCalendar() {
+    const today = new Date();
+    const bnMonths = ['বৈশাখ','জ্যৈষ্ঠ','আষাঢ়','শ্রাবণ','ভাদ্র','আশ্বিন','কার্তিক','অগ্রহায়ণ','পৌষ','মাঘ','ফাল্গুন','চৈত্র'];
+    const monthStarts = [
+      [3,14],[4,15],[5,15],[6,16],[7,16],[8,16],[9,16],[10,15],[11,15],[0,14],[1,13],[2,15]
+    ];
+
+    const todayBn = gregToBangla(today);
+    let mIdx = todayBn.monthIdx + calOffset;
+    let yearAdj = 0;
+    while (mIdx >= 12) { mIdx -= 12; yearAdj++; }
+    while (mIdx < 0)   { mIdx += 12; yearAdj--; }
+
+    // Compute start date of target Bangla month
+    const [sm, sd] = monthStarts[mIdx];
+    // Estimate Gregorian year
+    let gYear = today.getFullYear() + yearAdj;
+    // Adjust for months that span year boundary
+    if (mIdx >= 9) gYear = today.getFullYear() + yearAdj; // মাঘ/ফাল্গুন/চৈত্র in Gregorian Jan-Mar
+    const startDate = new Date(gYear, sm, sd);
+    const [nm, nd] = monthStarts[(mIdx + 1) % 12];
+    let endYear = gYear;
+    if (nm < sm || (nm === sm && nd < sd)) endYear = gYear + 1;
+    const endDate = new Date(endYear, nm, nd);
+    const daysInBnMonth = Math.round((endDate - startDate) / 86400000);
+
+    let bnYear;
+    if (mIdx === 0) bnYear = gYear - 593;
+    else if (sm > 3 || (sm === 3 && sd >= 14)) bnYear = gYear - 593;
+    else bnYear = gYear - 594;
+
+    const toBn = n => String(n).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+    document.getElementById('cal-nav-title').textContent = bnMonths[mIdx] + ' ' + toBn(bnYear);
+
+    const dayHeaders = ['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'];
+    document.getElementById('cal-day-headers').innerHTML = dayHeaders.map(d =>
+      `<div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;">${d}</div>`
+    ).join('');
+
+    const firstWeekday = startDate.getDay();
+    let cells = '';
+    for (let i = 0; i < firstWeekday; i++) cells += `<div></div>`;
+    for (let d = 1; d <= daysInBnMonth; d++) {
+      const isToday = (mIdx === todayBn.monthIdx && d === todayBn.day && yearAdj === 0);
+      const weekday = (firstWeekday + d - 1) % 7;
+      const isFri = weekday === 5;
+      const gregDate = new Date(startDate.getTime() + (d-1) * 86400000);
+      const dateKey = `${gregDate.getFullYear()}-${String(gregDate.getMonth()+1).padStart(2,'0')}-${String(gregDate.getDate()).padStart(2,'0')}`;
+      const hasNote = !!localStorage.getItem('calNote_' + dateKey);
+      cells += `<div onclick="openDateNote('${dateKey}')" style="
+        text-align:center; padding:7px 2px; border-radius:8px; font-size:13px; font-weight:${isToday?'700':'500'};
+        background:${isToday ? 'var(--gold)' : 'transparent'};
+        color:${isToday ? '#fff' : isFri ? 'var(--accent2)' : 'var(--text)'};
+        cursor:pointer; position:relative;
+      ">${toBn(d)}${hasNote ? '<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold);display:block;"></span>' : ''}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = cells;
+  }
+
+  function renderCalendar() {
+    if (calTab === 'greg') renderGregCalendar();
+    else if (calTab === 'hijri') renderHijriCalendar();
+    else renderBanglaCalendar();
+  }
+
+  function updateCalHeader() {
+    const today = new Date();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('cal-greg-month-year').textContent = monthNames[today.getMonth()] + ' ' + today.getFullYear();
+    const h = gregToHijri(today);
+    const hMonths = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhirah','Rajab',"Sha'ban",'Ramadan','Shawwal',"Dhul Qa'dah",'Dhul Hijjah'];
+    document.getElementById('cal-hijri-label').textContent = '🌙 ' + h.day + ' ' + hMonths[h.month-1] + ' ' + h.year + ' AH';
+    const bn = gregToBangla(today);
+    const toBn = n => String(n).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+    if (bn) document.getElementById('cal-bangla-label').textContent = '🪷 ' + toBn(bn.day) + ' ' + bn.monthName + ' ' + toBn(bn.year);
+  }
+
+  window.openCalendarModal = openCalendarModal;
+  window.closeCalendarModal = closeCalendarModal;
+  window.switchCalTab = switchCalTab;
+  window.calNav = calNav;
+
+  // ── Live Clock ───────────────────────────────────────────────
+  function updateLiveClock() {
+    const now = new Date();
+    let h = now.getHours();
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    document.getElementById('liveTime').textContent = `${h}:${m}:${s} ${ampm}`;
+  }
+  updateLiveClock();
+  setInterval(updateLiveClock, 1000);
+</script>
+
+
+<!-- Note Fullscreen Modal -->
+<div id="noteFullscreenModal" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--bg); flex-direction:column;">
+  <!-- Header -->
+  <div style="background:var(--text); padding:10px 16px; display:flex; align-items:center; gap:10px; flex-shrink:0; border-bottom:1px solid var(--gold);">
+    <button onclick="closeNoteFullscreen()" style="background:rgba(255,255,255,0.15); border:none; color:var(--bg); font-size:18px; width:32px; height:32px; border-radius:8px; cursor:pointer; line-height:1;">←</button>
+    <input type="text" id="fs-note-title" spellcheck="false"
+      style="flex:1; background:transparent; border:none; border-bottom:1.5px solid rgba(255,255,255,0.25); color:var(--gold); font-family:'Crimson Pro',serif; font-size:18px; font-weight:700; padding:4px 2px; outline:none;"
+      placeholder="শিরোনাম..." oninput="fsNoteUpdateTitle(this.value)" />
+    <button id="fs-delete-btn" onclick="deleteNoteFromFullscreen()" style="background:rgba(192,57,43,0.3); border:1px solid rgba(192,57,43,0.5); color:#f08080; border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer; font-family:'Hind Siliguri',sans-serif;">মুছুন</button>
+  </div>
+  <!-- Folder bar -->
+  <div style="background:var(--surface2); padding:6px 16px; display:flex; align-items:center; gap:8px; flex-shrink:0; border-bottom:1px solid var(--border);">
+    <span id="fs-folder-label" style="font-size:12px; color:var(--muted);">📁 ফোল্ডার:</span>
+    <select id="fs-note-folder" onchange="fsNoteUpdateFolder(this.value)"
+      style="font-size:12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'Hind Siliguri',sans-serif; padding:4px 8px; outline:none; cursor:pointer;"></select>
+    <span id="fs-note-saved" style="font-size:11px; color:var(--accent2); margin-left:auto;"></span>
+  </div>
+  <!-- Text area -->
+  <textarea id="fs-note-text" spellcheck="false"
+    style="flex:1; width:100%; background:var(--bg); border:none; outline:none; padding:18px 18px; font-family:'Hind Siliguri',sans-serif; font-size:16px; line-height:2; color:var(--text); resize:none; -webkit-overflow-scrolling:touch;"
+    placeholder="এখানে লিখুন..." oninput="fsNoteUpdateText(this.value)"></textarea>
+  <!-- Footer -->
+  <div style="background:var(--surface); border-top:1px solid var(--border); padding:8px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+    <span id="fs-note-date" style="font-size:11px; color:var(--muted);"></span>
+    <span id="fs-note-wordcount" style="font-size:11px; color:var(--muted);"></span>
+  </div>
+</div>
+<script>
+  // ── Note Fullscreen ─────────────────────────────────────────
+  let fsNoteId = null;
+
+  function openNoteFullscreen(id) {
+    const note = notes.find(n => n.id === id);
+    if (!note) return;
+    fsNoteId = id;
+    document.getElementById('fs-note-title').value = note.title || '';
+    document.getElementById('fs-note-text').value = note.text || '';
+    document.getElementById('fs-note-date').textContent = note.date ? ('🕐 ' + note.date + ' ' + note.time) : '';
+    fsUpdateWordCount(note.text || '');
+    // Populate folder select
+    const sel = document.getElementById('fs-note-folder');
+    sel.innerHTML = noteFolders.map(f => `<option value="${f}" ${f === note.folder ? 'selected' : ''}>${f}</option>`).join('');
+    document.getElementById('fs-note-saved').textContent = '';
+    // Apply lang
+    const isEn = currentLang === 'en';
+    document.getElementById('fs-note-title').placeholder = isEn ? 'Title...' : 'শিরোনাম...';
+    document.getElementById('fs-note-text').placeholder = isEn ? 'Write here...' : 'এখানে লিখুন...';
+    document.getElementById('fs-folder-label').textContent = '📁 ' + (isEn ? 'Folder:' : 'ফোল্ডার:');
+    document.getElementById('fs-delete-btn').textContent = isEn ? 'Delete' : 'মুছুন';
+    const modal = document.getElementById('noteFullscreenModal');
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('fs-note-text').focus(), 100);
+  }
+
+  function closeNoteFullscreen() {
+    document.getElementById('noteFullscreenModal').style.display = 'none';
+    fsNoteId = null;
+    renderNotes();
+  }
+
+  function fsUpdateWordCount(text) {
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    const isEn2 = currentLang === 'en';
+    document.getElementById('fs-note-wordcount').textContent = isEn2 ? (words + ' words · ' + chars + ' chars') : (words + ' শব্দ · ' + chars + ' অক্ষর');
+  }
+
+  let fsSaveTimer = null;
+  function fsTriggerSave() {
+    const isEnS = currentLang === 'en';
+    document.getElementById('fs-note-saved').textContent = isEnS ? '✏️ Saving...' : '✏️ সেভ হচ্ছে...';
+    clearTimeout(fsSaveTimer);
+    fsSaveTimer = setTimeout(async () => {
+      await saveNotes();
+      document.getElementById('fs-note-saved').textContent = currentLang === 'en' ? '✅ Saved' : '✅ সেভ হয়েছে';
+      setTimeout(() => { document.getElementById('fs-note-saved').textContent = ''; }, 2000);
+    }, 600);
+  }
+
+  function fsNoteUpdateTitle(val) {
+    if (!fsNoteId) return;
+    const note = notes.find(n => n.id === fsNoteId);
+    if (!note) return;
+    note.title = val;
+    fsTriggerSave();
+  }
+
+  function fsNoteUpdateText(val) {
+    if (!fsNoteId) return;
+    const note = notes.find(n => n.id === fsNoteId);
+    if (!note) return;
+    note.text = val;
+    fsUpdateWordCount(val);
+    fsTriggerSave();
+  }
+
+  function fsNoteUpdateFolder(val) {
+    if (!fsNoteId) return;
+    const note = notes.find(n => n.id === fsNoteId);
+    if (!note) return;
+    note.folder = val;
+    fsTriggerSave();
+  }
+
+  function deleteNoteFromFullscreen() {
+    if (!fsNoteId) return;
+    if (!confirm(currentLang === 'en' ? 'Delete this note?' : 'এই নোটটি মুছে ফেলবেন?')) return;
+    deleteNote(fsNoteId);
+    document.getElementById('noteFullscreenModal').style.display = 'none';
+    fsNoteId = null;
+  }
+
+  window.openNoteFullscreen = openNoteFullscreen;
+  window.closeNoteFullscreen = closeNoteFullscreen;
+  window.fsNoteUpdateTitle = fsNoteUpdateTitle;
+  window.fsNoteUpdateText = fsNoteUpdateText;
+  window.fsNoteUpdateFolder = fsNoteUpdateFolder;
+  window.deleteNoteFromFullscreen = deleteNoteFromFullscreen;
+</script>
+
+<script>
+  // ── AI Chat ──────────────────────────────────────────────────
+  let aiHistory = [];
+
+  async function sendAIMessage() {
+    const input = document.getElementById('ai-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    document.getElementById('ai-welcome') && (document.getElementById('ai-welcome').style.display = 'none');
+
+    const isEn = currentLang === 'en';
+
+    // Add user bubble
+    appendAIBubble('user', msg);
+
+    // Disable send btn
+    const btn = document.getElementById('ai-send-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳';
+
+    // Typing indicator
+    const typingId = 'ai-typing-' + Date.now();
+    appendAIBubble('typing', isEn ? 'Thinking...' : 'ভাবছি...', typingId);
+    scrollAIToBottom();
+
+    // Add to history
+    aiHistory.push({ role: 'user', content: msg });
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: isEn
+            ? 'You are a helpful Arabic and Islamic studies assistant. Be concise, warm, and educational. Use examples where helpful.'
+            : 'তুমি একজন সহায়ক আরবি ও ইসলামিক শিক্ষার সহকারী। সংক্ষিপ্ত, বন্ধুত্বপূর্ণ এবং শিক্ষামূলকভাবে উত্তর দাও। প্রয়োজনে উদাহরণ দাও। বাংলায় উত্তর দাও।',
+          messages: aiHistory
+        })
+      });
+
+      const data = await res.json();
+      const reply = data.content && data.content[0] ? data.content[0].text : (isEn ? 'Sorry, could not get a response.' : 'দুঃখিত, উত্তর পাওয়া যায়নি।');
+
+      // Remove typing
+      const el = document.getElementById(typingId);
+      if (el) el.remove();
+
+      aiHistory.push({ role: 'assistant', content: reply });
+      appendAIBubble('assistant', reply);
+
+    } catch(e) {
+      const el = document.getElementById(typingId);
+      if (el) el.remove();
+      appendAIBubble('assistant', isEn ? '❌ Error. Please try again.' : '❌ সংযোগ ত্রুটি। আবার চেষ্টা করুন।');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '➤';
+    scrollAIToBottom();
+  }
+
+  function appendAIBubble(role, text, id) {
+    const container = document.getElementById('ai-messages');
+    const div = document.createElement('div');
+    if (id) div.id = id;
+
+    if (role === 'user') {
+      div.style.cssText = 'align-self:flex-end; max-width:82%; background:var(--text); color:var(--bg); border-radius:14px 14px 4px 14px; padding:10px 14px; font-size:14px; line-height:1.7; word-break:break-word;';
+      div.textContent = text;
+    } else if (role === 'typing') {
+      div.style.cssText = 'align-self:flex-start; max-width:82%; background:var(--surface); border:1.5px solid var(--border); border-radius:14px 14px 14px 4px; padding:10px 14px; font-size:13px; color:var(--muted); font-style:italic;';
+      div.textContent = text;
+    } else {
+      div.style.cssText = 'align-self:flex-start; max-width:88%; background:var(--surface); border:1.5px solid var(--border); border-radius:14px 14px 14px 4px; padding:12px 14px; font-size:14px; line-height:1.8; word-break:break-word; white-space:pre-wrap;';
+      div.textContent = text;
+    }
+
+    container.appendChild(div);
+  }
+
+  function scrollAIToBottom() {
+    const c = document.getElementById('ai-messages');
+    setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
+  }
+
+  window.sendAIMessage = sendAIMessage;
+</script>
+
+
+<!-- Date Note Modal -->
+<div id="dateNoteModal" style="display:none; position:fixed; inset:0; z-index:10001; background:rgba(0,0,0,0.55); align-items:flex-end; justify-content:center;">
+  <div style="background:var(--surface); width:100%; max-width:480px; border-radius:18px 18px 0 0; padding:20px 20px 32px; border-top:2px solid var(--gold);">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+      <div>
+        <div id="dn-greg-label" style="font-family:'Crimson Pro',serif; font-size:18px; font-weight:700; color:var(--text);"></div>
+        <div style="display:flex; gap:10px; margin-top:2px;">
+          <div id="dn-hijri-label" style="font-size:11px; color:var(--muted);"></div>
+          <div id="dn-bangla-label" style="font-size:11px; color:var(--muted);"></div>
+        </div>
+      </div>
+      <button onclick="closeDateNote()" style="background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; width:32px; height:32px; font-size:16px; cursor:pointer; color:var(--muted);">✕</button>
+    </div>
+    <textarea id="dn-text" spellcheck="false" rows="5"
+      style="width:100%; font-size:15px; line-height:1.8; border-radius:10px; padding:12px 14px; resize:none; margin-bottom:14px; font-family:'Hind Siliguri',sans-serif;"
+      placeholder="এই তারিখের জন্য নোট লিখুন..."></textarea>
+    <div style="display:flex; gap:10px;">
+      <button onclick="saveDateNote()" style="flex:1; background:var(--text); color:var(--bg); border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Hind Siliguri',sans-serif;">✅ সেভ করুন</button>
+      <button onclick="deleteDateNote()" id="dn-delete-btn" style="background:transparent; border:1.5px solid var(--border); border-radius:10px; padding:12px 16px; font-size:13px; cursor:pointer; color:var(--muted); font-family:'Hind Siliguri',sans-serif;">🗑️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Date Notes ────────────────────────────────────────────────
+  let currentDateKey = null;
+
+  function openDateNote(dateKey) {
+    currentDateKey = dateKey;
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    document.getElementById('dn-greg-label').textContent = dayNames[date.getDay()] + ', ' + d + ' ' + monthNames[m-1] + ' ' + y;
+
+    const h = gregToHijri(date);
+    const hMonths = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhirah','Rajab',"Sha'ban",'Ramadan','Shawwal',"Dhul Qa'dah",'Dhul Hijjah'];
+    document.getElementById('dn-hijri-label').textContent = '🌙 ' + h.day + ' ' + hMonths[h.month-1];
+
+    const bn = gregToBangla(date);
+    const toBn = n => String(n).replace(/[0-9]/g, x => '০১২৩৪৫৬৭৮৯'[x]);
+    if (bn) document.getElementById('dn-bangla-label').textContent = '🪷 ' + toBn(bn.day) + ' ' + bn.monthName;
+
+    const saved = localStorage.getItem('calNote_' + dateKey) || '';
+    document.getElementById('dn-text').value = saved;
+    document.getElementById('dn-delete-btn').style.display = saved ? 'block' : 'none';
+
+    const isEn = currentLang === 'en';
+    document.getElementById('dn-text').placeholder = isEn ? 'Write a note for this date...' : 'এই তারিখের জন্য নোট লিখুন...';
+
+    document.getElementById('dateNoteModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('dn-text').focus(), 100);
+  }
+
+  function closeDateNote() {
+    document.getElementById('dateNoteModal').style.display = 'none';
+    currentDateKey = null;
+  }
+
+  function saveDateNote() {
+    if (!currentDateKey) return;
+    const text = document.getElementById('dn-text').value.trim();
+    if (text) {
+      localStorage.setItem('calNote_' + currentDateKey, text);
+    } else {
+      localStorage.removeItem('calNote_' + currentDateKey);
+    }
+    closeDateNote();
+    renderCalendar();
+  }
+
+  function deleteDateNote() {
+    if (!currentDateKey) return;
+    localStorage.removeItem('calNote_' + currentDateKey);
+    closeDateNote();
+    renderCalendar();
+  }
+
+  // Close on backdrop click
+  document.getElementById('dateNoteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDateNote();
+  });
+
+  window.openDateNote = openDateNote;
+  window.closeDateNote = closeDateNote;
+  window.saveDateNote = saveDateNote;
+  window.deleteDateNote = deleteDateNote;
+</script>
+
 </body>
 </html>
