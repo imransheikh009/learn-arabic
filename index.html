@@ -3551,8 +3551,8 @@
     localStorage.setItem('openrouter_api_key', apiKey);
 
     const systemPrompt = isEn
-      ? 'You are a helpful Arabic and Islamic studies assistant. Be concise, warm, and educational.'
-      : 'তুমি একজন সহায়ক আরবি ও ইসলামিক শিক্ষার সহকারী। বাংলায় উত্তর দাও। সংক্ষিপ্ত ও শিক্ষামূলকভাবে উত্তর দাও।';
+      ? 'You are a smart, friendly AI assistant like ChatGPT. Answer any question naturally and conversationally. Be helpful, clear, and concise. Use bullet points or lists only when it genuinely helps. Never write long unnecessary intros.'
+      : 'তুমি একজন বুদ্ধিমান ও বন্ধুত্বপূর্ণ AI assistant, ঠিক ChatGPT বা Gemini এর মতো। যেকোনো বিষয়ে স্বাভাবিকভাবে উত্তর দাও। বাংলায় কথা বললে বাংলায়, ইংরেজিতে কথা বললে ইংরেজিতে উত্তর দাও। উত্তর স্পষ্ট, সহজ ও প্রাসঙ্গিক রাখো। অপ্রয়োজনীয় ভূমিকা বা লম্বা তালিকা এড়িয়ে চলো।';
 
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -3560,7 +3560,7 @@
     ];
 
     try {
-      const res = await fetch('https://corsproxy.io/?https://openrouter.ai/api/v1/chat/completions', {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3569,7 +3569,7 @@
           'X-Title': 'Learn Arabic'
         },
         body: JSON.stringify({
-          model: 'openrouter/auto',
+          model: 'google/gemma-3-4b-it:free',
           messages: messages,
           max_tokens: 1000
         })
