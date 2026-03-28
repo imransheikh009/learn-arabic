@@ -732,9 +732,9 @@
   </div>
   <div class="stats-bar" style="display:flex; align-items:center; gap:10px;">
     <!-- Big time -->
-    <div id="liveTime" onclick="openCalendarModal()" style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Crimson Pro',serif; letter-spacing:1px; line-height:1; cursor:pointer;"></div>
+    <div id="liveTime" onclick="openCalendarModal()" style="font-size:14px; font-weight:700; color:var(--gold); font-family:'Crimson Pro',serif; letter-spacing:1px; line-height:1; cursor:pointer;"></div>
     <!-- Dates -->
-    <div style="text-align:left; line-height:1.6; cursor:pointer;" onclick="openCalendarModal()" title="ক্যালেন্ডার দেখুন">
+    <div style="display:none;" onclick="openCalendarModal()" title="ক্যালেন্ডার দেখুন">
       <div id="hijriDate" style="font-size:10px; color:rgba(245,240,232,0.7); letter-spacing:0.3px;"></div>
       <div id="banglaDate" style="font-size:10px; color:rgba(245,240,232,0.55); letter-spacing:0.3px;"></div>
     </div>
@@ -1182,7 +1182,16 @@
       <!-- Header -->
       <div style="margin-bottom:14px;">
         <div class="section-title" style="font-size:20px; margin-bottom:4px;">🤖 AI সাহায্যকারী</div>
-        <div class="section-sub" style="margin-bottom:0; font-size:13px;">আরবি, ইসলাম বা যেকোনো বিষয়ে প্রশ্ন করুন</div>
+        <div class="section-sub" style="margin-bottom:8px; font-size:13px;">আরবি, ইসলাম বা যেকোনো বিষয়ে প্রশ্ন করুন</div>
+        <!-- API Key input -->
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="password" id="ai-api-key" placeholder="OpenRouter API Key (sk-or-...)"
+            style="flex:1; font-size:12px; padding:8px 12px; border-radius:8px; margin-bottom:0;"
+            oninput="localStorage.setItem('openrouter_api_key', this.value)"/>
+          <button onclick="document.getElementById('ai-api-key').type = document.getElementById('ai-api-key').type==='password'?'text':'password'"
+            style="background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; flex-shrink:0;">👁️</button>
+        </div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;">🔑 বিনামূল্যে key: <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--gold);">openrouter.ai/keys</a></div>
       </div>
 
       <!-- Chat messages -->
@@ -3488,85 +3497,20 @@
   // ── AI Chat ──────────────────────────────────────────────────
   let aiHistory = [];
 
-  async function sendAIMessage() {
-    const input = document.getElementById('ai-input');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    input.value = '';
-    input.style.height = 'auto';
-    document.getElementById('ai-welcome') && (document.getElementById('ai-welcome').style.display = 'none');
-
-    const isEn = currentLang === 'en';
-
-    // Add user bubble
-    appendAIBubble('user', msg);
-
-    // Disable send btn
-    const btn = document.getElementById('ai-send-btn');
-    btn.disabled = true;
-    btn.textContent = '⏳';
-
-    // Typing indicator
-    const typingId = 'ai-typing-' + Date.now();
-    appendAIBubble('typing', isEn ? 'Thinking...' : 'ভাবছি...', typingId);
-    scrollAIToBottom();
-
-    // Add to history
-    aiHistory.push({ role: 'user', content: msg });
-
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: isEn
-            ? 'You are a helpful Arabic and Islamic studies assistant. Be concise, warm, and educational. Use examples where helpful.'
-            : 'তুমি একজন সহায়ক আরবি ও ইসলামিক শিক্ষার সহকারী। সংক্ষিপ্ত, বন্ধুত্বপূর্ণ এবং শিক্ষামূলকভাবে উত্তর দাও। প্রয়োজনে উদাহরণ দাও। বাংলায় উত্তর দাও।',
-          messages: aiHistory
-        })
-      });
-
-      const data = await res.json();
-      const reply = data.content && data.content[0] ? data.content[0].text : (isEn ? 'Sorry, could not get a response.' : 'দুঃখিত, উত্তর পাওয়া যায়নি।');
-
-      // Remove typing
-      const el = document.getElementById(typingId);
-      if (el) el.remove();
-
-      aiHistory.push({ role: 'assistant', content: reply });
-      appendAIBubble('assistant', reply);
-
-    } catch(e) {
-      const el = document.getElementById(typingId);
-      if (el) el.remove();
-      appendAIBubble('assistant', isEn ? '❌ Error. Please try again.' : '❌ সংযোগ ত্রুটি। আবার চেষ্টা করুন।');
-    }
-
-    btn.disabled = false;
-    btn.textContent = '➤';
-    scrollAIToBottom();
-  }
-
   function appendAIBubble(role, text, id) {
     const container = document.getElementById('ai-messages');
     const div = document.createElement('div');
     if (id) div.id = id;
-
     if (role === 'user') {
-      div.style.cssText = 'align-self:flex-end; max-width:82%; background:var(--text); color:var(--bg); border-radius:14px 14px 4px 14px; padding:10px 14px; font-size:14px; line-height:1.7; word-break:break-word;';
-      div.textContent = text;
+      div.style.cssText = 'align-self:flex-end;max-width:82%;background:var(--text);color:var(--bg);border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:14px;line-height:1.7;word-break:break-word;';
     } else if (role === 'typing') {
-      div.style.cssText = 'align-self:flex-start; max-width:82%; background:var(--surface); border:1.5px solid var(--border); border-radius:14px 14px 14px 4px; padding:10px 14px; font-size:13px; color:var(--muted); font-style:italic;';
-      div.textContent = text;
+      div.style.cssText = 'align-self:flex-start;max-width:82%;background:var(--surface);border:1.5px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13px;color:var(--muted);font-style:italic;';
     } else {
-      div.style.cssText = 'align-self:flex-start; max-width:88%; background:var(--surface); border:1.5px solid var(--border); border-radius:14px 14px 14px 4px; padding:12px 14px; font-size:14px; line-height:1.8; word-break:break-word; white-space:pre-wrap;';
-      div.textContent = text;
+      div.style.cssText = 'align-self:flex-start;max-width:88%;background:var(--surface);border:1.5px solid var(--border);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14px;line-height:1.8;word-break:break-word;white-space:pre-wrap;';
     }
-
+    div.textContent = text;
     container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
   }
 
   function scrollAIToBottom() {
@@ -3574,7 +3518,97 @@
     setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
   }
 
+  async function sendAIMessage() {
+    const input = document.getElementById('ai-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    const welcome = document.getElementById('ai-welcome');
+    if (welcome) welcome.style.display = 'none';
+
+    const isEn = currentLang === 'en';
+    appendAIBubble('user', msg);
+
+    const btn = document.getElementById('ai-send-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳';
+
+    const typingId = 'ai-typing-' + Date.now();
+    appendAIBubble('typing', 'ভাবছি...', typingId);
+    scrollAIToBottom();
+
+    aiHistory.push({ role: 'user', content: msg });
+
+    const apiKey = document.getElementById('ai-api-key').value.trim() || localStorage.getItem('openrouter_api_key') || '';
+    if (!apiKey) {
+      document.getElementById(typingId)?.remove();
+      aiHistory.pop();
+      appendAIBubble('assistant', '⚠️ উপরের ঘরে OpenRouter API key লিখুন। openrouter.ai/keys থেকে বিনামূল্যে নিন।');
+      btn.disabled = false; btn.textContent = '➤'; scrollAIToBottom(); return;
+    }
+    localStorage.setItem('openrouter_api_key', apiKey);
+
+    const systemPrompt = isEn
+      ? 'You are a helpful Arabic and Islamic studies assistant. Be concise, warm, and educational.'
+      : 'তুমি একজন সহায়ক আরবি ও ইসলামিক শিক্ষার সহকারী। বাংলায় উত্তর দাও। সংক্ষিপ্ত ও শিক্ষামূলকভাবে উত্তর দাও।';
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...aiHistory
+    ];
+
+    try {
+      const res = await fetch('https://corsproxy.io/?https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + apiKey,
+          'HTTP-Referer': location.href,
+          'X-Title': 'Learn Arabic'
+        },
+        body: JSON.stringify({
+          model: 'meta-llama/llama-3.1-8b-instruct:free',
+          messages: messages,
+          max_tokens: 1000
+        })
+      });
+
+      const data = await res.json();
+      document.getElementById(typingId)?.remove();
+
+      let reply;
+      if (data.choices && data.choices[0]) {
+        reply = data.choices[0].message.content;
+        aiHistory.push({ role: 'assistant', content: reply });
+      } else if (data.error) {
+        reply = '❌ ' + (data.error.message || JSON.stringify(data.error));
+        aiHistory.pop();
+      } else {
+        reply = '❌ ' + JSON.stringify(data).slice(0, 150);
+        aiHistory.pop();
+      }
+      appendAIBubble('assistant', reply);
+
+    } catch(e) {
+      document.getElementById(typingId)?.remove();
+      aiHistory.pop();
+      appendAIBubble('assistant', '❌ নেটওয়ার্ক সমস্যা: ' + (e.message || e));
+    }
+
+    btn.disabled = false;
+    btn.textContent = '➤';
+    scrollAIToBottom();
+  }
+
   window.sendAIMessage = sendAIMessage;
+
+  // Load saved API key on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('openrouter_api_key');
+    if (saved) document.getElementById('ai-api-key').value = saved;
+  });
 </script>
 
 
