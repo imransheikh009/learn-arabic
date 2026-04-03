@@ -2,7 +2,11 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1408">
 <title>Learn Arabic — Made by Imran</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -37,14 +41,15 @@
   header {
     background: var(--text);
     color: var(--bg);
-    padding: 8px 16px;
+    padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
     display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 100;
     border-bottom: 1px solid var(--gold);
     flex-shrink: 0;
-    height: 44px;
+    height: calc(44px + env(safe-area-inset-top));
+  min-height: calc(44px + env(safe-area-inset-top));
   }
 
   .logo { display: flex; align-items: center; gap: 5px; }
@@ -78,7 +83,7 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 16px 16px 16px;
+    padding: 16px 16px 80px;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -102,7 +107,7 @@
     font-size: 9px;
     background: var(--surface);
     color: var(--muted);
-    transition: all 0.2s;
+    transition: all 0.15s;
     border: none;
     font-family: 'Hind Siliguri', sans-serif;
     display: flex;
@@ -111,6 +116,7 @@
     justify-content: center;
     gap: 3px;
     border-right: none;
+    touch-action: manipulation;
   }
 
   .tab .tab-icon { font-size: 18px; line-height: 1; }
@@ -180,12 +186,13 @@
     border-radius: 8px;
     color: var(--text);
     font-family: 'Hind Siliguri', sans-serif;
-    font-size: 15px;
-    padding: 10px 14px;
+    font-size: 16px;
+    padding: 12px 14px;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
     margin-bottom: 14px;
     resize: none;
+    -webkit-appearance: none;
   }
 
   input[type="text"]:focus, textarea:focus {
@@ -203,7 +210,8 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    touch-action: manipulation;
   }
 
   .btn-primary:hover { background: var(--gold); }
@@ -359,8 +367,9 @@
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
     letter-spacing: 0.3px;
+    touch-action: manipulation;
   }
 
   .submit-btn:hover { background: var(--gold); }
@@ -493,11 +502,65 @@
     display: none;
   }
 
+  /* ── Mobile Smoothness ── */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  input, textarea, select, button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Prevent iOS zoom on input focus - must be 16px+ */
+  input[type="text"], textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Smooth scrolling everywhere */
+  * { scroll-behavior: smooth; }
+  main, #quizQuestionList, #ai-messages {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Safe area support (notch/home bar) */
+  header {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .tabs {
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+    height: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  main {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  /* Larger touch targets */
+  .tab { min-height: 56px; }
+  .btn-primary, .btn-danger, .btn-outline { min-height: 44px; }
+  .submit-btn { min-height: 52px; font-size: 17px; }
+
+  /* Active press feedback */
+  .tab:active { opacity: 0.7; transform: scale(0.97); }
+  .btn-primary:active { transform: scale(0.97); opacity: 0.85; }
+  .btn-danger:active { opacity: 0.7; }
+  .db-item:active { transform: scale(0.99); }
+
+  /* Prevent text selection on buttons */
+  button, .tab { user-select: none; -webkit-user-select: none; }
+
   @media (max-width: 600px) {
-    header { padding: 14px 16px; }
     .stats-bar { gap: 14px; }
-    main { padding: 24px 14px 60px; }
+    main { padding: 16px 14px 16px; }
     .q-text { font-size: 19px; }
+    .db-add-form { padding: 16px; }
+    .question-card { padding: 20px 18px; }
+    .section-title { font-size: 22px; }
   }
 
   .badge-count {
@@ -958,7 +1021,11 @@
           <button class="btn-primary" onclick="startPractice()" data-bn="▶ শুরু করুন" data-en="▶ Start">▶ শুরু করুন</button>
         </div>
       </div>
-      <div id="practiceCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:4px;"></div>
+      <div style="margin-bottom:10px;">
+        <input type="text" id="practiceSearch" placeholder="🔍 প্রশ্ন খুঁজুন..." oninput="filterPracticeList()" style="margin-bottom:6px;" autocomplete="off" spellcheck="false">
+        <div id="practiceSearchCount" style="font-size:12px; color:var(--muted);"></div>
+      </div>
+      <div id="practiceCheckList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:4px; max-height:320px; overflow-y:auto; padding-right:2px; -webkit-overflow-scrolling:touch;"></div>
     </div>
 
     <div id="practiceArea" style="display:none;">
@@ -1135,7 +1202,7 @@
       <div id="ayatSearchCount" style="font-size:12px; color:var(--muted); margin-bottom:10px;"></div>
 
       <!-- QA list for this surah -->
-      <div id="surahQAList" style="display:flex; flex-direction:column; gap:10px;"></div>
+      <div id="surahQAList" style="display:flex; flex-direction:column; gap:8px; padding:0;"></div>
     </div>
   </div>
 
@@ -1404,7 +1471,7 @@
 
   let database = [];
   let stats = { correct: 0, incorrect: 0, total: 0 };
-  let history = [];
+  let quizHistory = [];
   let currentQIndex = -1;
   let pendingDeleteIndex = -1;
 
@@ -1735,9 +1802,30 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   });
 
   // ─── Export / Import ─────────────────────────────────────
+  function getCalendarNotes() {
+    const calNotes = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('calNote_')) {
+        calNotes[key.replace('calNote_', '')] = localStorage.getItem(key);
+      }
+    }
+    return calNotes;
+  }
+
+  function restoreCalendarNotes(calNotes) {
+    if (!calNotes || typeof calNotes !== 'object') return 0;
+    let count = 0;
+    for (const [dateKey, text] of Object.entries(calNotes)) {
+      if (text) { localStorage.setItem('calNote_' + dateKey, text); count++; }
+    }
+    return count;
+  }
+
   async function exportDB() {
     if (database.length === 0 && notes.length === 0) { showToast('❌ ডেটাবেজ খালি!', 'red'); return; }
-    const backup = { database, notes, surahs };
+    const calendarNotes = getCalendarNotes();
+    const backup = { database, notes, surahs, calendarNotes };
     const json = JSON.stringify(backup, null, 2);
     document.getElementById('exportText').value = json;
     document.getElementById('exportModal').classList.add('show');
@@ -1770,7 +1858,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   }
 
   function doDownloadJSON() {
-    const backup = { database, notes, surahs };
+    const calendarNotes = getCalendarNotes();
+    const backup = { database, notes, surahs, calendarNotes };
     const json = JSON.stringify(backup, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1840,11 +1929,14 @@ Respond ONLY with valid JSON in this exact format, nothing else:
           await saveSurahs();
         }
 
+        const calCount = restoreCalendarNotes(parsed.calendarNotes);
+
         const notesMsg = (notesData && notesData.length > 0) ? ` + ${notesData.length} নোট` : '';
         const surahMsg = (parsed.surahs && parsed.surahs.length > 0) ? ` + ${parsed.surahs.length} সূরা` : '';
-        okEl.textContent = `✅ ${data.length} টি প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`;
+        const calMsg = calCount > 0 ? ` + ${calCount} ক্যালেন্ডার নোট` : '';
+        okEl.textContent = `✅ ${data.length} টি প্রশ্ন${notesMsg}${surahMsg}${calMsg} import হয়েছে!`;
         okEl.style.display = 'block';
-        showToast(`✅ ${data.length} প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`, 'green');
+        showToast(`✅ ${data.length} প্রশ্ন${notesMsg}${surahMsg}${calMsg} import হয়েছে!`, 'green');
         setTimeout(() => closeImportModal(), 1500);
       } catch(e) {
         errEl.textContent = '❌ ফাইলটা সঠিক নয়। proshnomala-backup.json ফাইল দিন।';
@@ -1910,11 +2002,14 @@ Respond ONLY with valid JSON in this exact format, nothing else:
         await saveSurahs();
       }
 
+      const calCount = restoreCalendarNotes(parsed && parsed.calendarNotes);
+
       const notesMsg = (notesData && notesData.length > 0) ? ` + ${notesData.length} নোট` : '';
       const surahMsg = (parsed && parsed.surahs && parsed.surahs.length > 0) ? ` + ${parsed.surahs.length} সূরা` : '';
-      okEl.textContent = `✅ ${database.length} টি প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`;
+      const calMsg = calCount > 0 ? ` + ${calCount} ক্যালেন্ডার নোট` : '';
+      okEl.textContent = `✅ ${database.length} টি প্রশ্ন${notesMsg}${surahMsg}${calMsg} import হয়েছে!`;
       okEl.style.display = 'block';
-      showToast(`✅ ${database.length} প্রশ্ন${notesMsg}${surahMsg} import হয়েছে!`, 'green');
+      showToast(`✅ ${database.length} প্রশ্ন${notesMsg}${surahMsg}${calMsg} import হয়েছে!`, 'green');
       setTimeout(() => closeImportModal(), 1500);
     } catch(e) {
       const len = raw.length;
@@ -2112,7 +2207,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     if (type === 'correct') stats.correct++;
     else if (type === 'incorrect') stats.incorrect++;
     updateStats();
-    history.unshift({ question, userAns, correctAnswer, result, type, time: new Date().toLocaleTimeString('bn-BD') });
+    quizHistory.unshift({ question, userAns, correctAnswer, result, type, time: new Date().toLocaleTimeString('bn-BD') });
     const nextBtn = document.getElementById('nextBtn');
     nextBtn.textContent = isEn ? 'Next Question →' : 'পরবর্তী প্রশ্ন →';
     nextBtn.style.display = 'block';
@@ -2141,11 +2236,11 @@ Respond ONLY with valid JSON in this exact format, nothing else:
 
   function renderHistory() {
     const list = document.getElementById('historyList');
-    if (history.length === 0) {
+    if (quizHistory.length === 0) {
       list.innerHTML = '';
       return;
     }
-    list.innerHTML = history.map(h => `
+    list.innerHTML = quizHistory.map(h => `
       <div class="history-item ${h.type}">
         <div class="hi-question">❓ ${escHtml(h.question)}</div>
         <div class="hi-answer">আপনি বলেছিলেন: ${escHtml(h.userAns)}</div>
@@ -2164,31 +2259,103 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   let practiceCorrect = 0;
   let practiceTotal = 0;
 
+  let practiceSelected = new Set();
+
   function initPracticeSetup() {
     document.getElementById('practiceSetup').style.display = 'block';
     document.getElementById('practiceArea').style.display = 'none';
     document.getElementById('practiceSummary').style.display = 'none';
+    const searchEl = document.getElementById('practiceSearch');
+    if (searchEl) searchEl.value = '';
+    const countEl = document.getElementById('practiceSearchCount');
+    if (countEl) countEl.textContent = '';
+    // default: all selected
+    practiceSelected = new Set(database.map((_, i) => i));
+    renderPracticeList('');
+  }
+
+  function renderPracticeList(query) {
     const list = document.getElementById('practiceCheckList');
     const isEn = currentLang === 'en';
     if (database.length === 0) {
       list.innerHTML = '<div class="empty-state">📭 ' + (isEn ? 'No questions in database.' : 'ডেটাবেজে কোনো প্রশ্ন নেই।') + '</div>';
       return;
     }
-    list.innerHTML = database.map((item, i) => `
-      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; padding:10px 12px; background:var(--surface); border:1.5px solid var(--border); border-radius:8px; transition:border-color 0.2s;">
-        <input type="checkbox" class="practice-chk" value="${i}" checked style="margin-top:3px; width:16px; height:16px; cursor:pointer; flex-shrink:0;">
-        <span style="font-size:14px; line-height:1.5;">${i+1}. ${escHtml(item.q)}</span>
-      </label>
-    `).join('');
+    const q = query.trim().toLowerCase();
+    const filtered = database.map((item, i) => ({ item, i })).filter(({ item }) =>
+      !q || item.q.toLowerCase().includes(q) || (item.a && item.a.toLowerCase().includes(q))
+    );
+    const countEl = document.getElementById('practiceSearchCount');
+    if (countEl) {
+      countEl.textContent = q
+        ? (isEn ? `${filtered.length} of ${database.length} found` : `${database.length} টির মধ্যে ${filtered.length} টি পাওয়া গেছে`)
+        : (isEn ? `${practiceSelected.size} selected` : `${practiceSelected.size} টি সিলেক্ট করা আছে`);
+    }
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty-state">🔍 ' + (isEn ? 'No match found.' : 'কিছু পাওয়া যায়নি।') + '</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(({ item, i }) => {
+      const isChecked = practiceSelected.has(i) ? 'checked' : '';
+      const highlighted = q
+        ? escHtml(item.q).replace(new RegExp(escHtml(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark style="background:rgba(184,134,11,0.25);border-radius:3px;padding:0 2px;">${m}</mark>`)
+        : escHtml(item.q);
+      const sel = practiceSelected.has(i);
+      const borderStyle = sel ? '2.5px solid var(--gold)' : '1.5px solid var(--border)';
+      const bgStyle = sel ? 'rgba(184,134,11,0.10)' : 'var(--surface)';
+      const textStyle = sel ? 'font-weight:600; color:var(--text);' : 'color:var(--muted);';
+      return `<label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; padding:11px 14px; background:${bgStyle}; border:${borderStyle}; border-radius:10px; transition:all 0.2s; box-shadow:${sel ? '0 2px 8px rgba(184,134,11,0.15)' : 'none'};" for="pchk-${i}">
+        <input type="checkbox" id="pchk-${i}" class="practice-chk" value="${i}" ${isChecked} style="margin-top:3px; width:17px; height:17px; cursor:pointer; flex-shrink:0; accent-color:var(--gold);" onchange="togglePracticeItem(event, ${i}, this.checked)">
+        <span style="font-size:14px; line-height:1.5; ${textStyle}">${i+1}. ${highlighted}</span>
+      </label>`;
+    }).join('');
+  }
+
+  function togglePracticeItem(e, idx, forceVal) {
+    if (forceVal !== undefined) {
+      forceVal ? practiceSelected.add(idx) : practiceSelected.delete(idx);
+    } else {
+      practiceSelected.has(idx) ? practiceSelected.delete(idx) : practiceSelected.add(idx);
+      const chk = document.getElementById(`pchk-${idx}`);
+      if (chk) chk.checked = practiceSelected.has(idx);
+    }
+    // update label highlight
+    const lbl = document.querySelector(`label[for="pchk-${idx}"]`);
+    if (lbl) {
+      const sel = practiceSelected.has(idx);
+      lbl.style.border = sel ? '2.5px solid var(--gold)' : '1.5px solid var(--border)';
+      lbl.style.background = sel ? 'rgba(184,134,11,0.10)' : 'var(--surface)';
+      lbl.style.boxShadow = sel ? '0 2px 8px rgba(184,134,11,0.15)' : 'none';
+      const span = lbl.querySelector('span');
+      if (span) { span.style.fontWeight = sel ? '600' : '400'; span.style.color = sel ? 'var(--text)' : 'var(--muted)'; }
+    }
+    const isEn = currentLang === 'en';
+    const countEl = document.getElementById('practiceSearchCount');
+    if (countEl) {
+      const q = document.getElementById('practiceSearch')?.value.trim() || '';
+      const filtered = database.filter(item => !q || item.q.toLowerCase().includes(q.toLowerCase()) || (item.a && item.a.toLowerCase().includes(q.toLowerCase())));
+      countEl.textContent = q
+        ? (isEn ? `${filtered.length} of ${database.length} found` : `${database.length} টির মধ্যে ${filtered.length} টি পাওয়া গেছে`)
+        : (isEn ? `${practiceSelected.size} selected` : `${practiceSelected.size} টি সিলেক্ট করা আছে`);
+    }
+  }
+
+  function filterPracticeList() {
+    const q = document.getElementById('practiceSearch')?.value || '';
+    renderPracticeList(q);
   }
 
   function selectAllPractice() {
     const isEn = currentLang === 'en';
-    const all = document.querySelectorAll('.practice-chk');
-    const allChecked = [...all].every(c => c.checked);
-    all.forEach(c => c.checked = !allChecked);
+    const allSelected = practiceSelected.size === database.length;
+    if (allSelected) {
+      practiceSelected.clear();
+    } else {
+      database.forEach((_, i) => practiceSelected.add(i));
+    }
     const btn = document.querySelector('[onclick="selectAllPractice()"]');
-    if (btn) btn.textContent = allChecked ? (isEn ? 'Select All' : 'সব সিলেক্ট') : (isEn ? 'Deselect All' : 'সব বাদ');
+    if (btn) btn.textContent = allSelected ? (isEn ? 'Select All' : 'সব সিলেক্ট') : (isEn ? 'Deselect All' : 'সব বাদ');
+    renderPracticeList(document.getElementById('practiceSearch')?.value || '');
   }
 
   function deselectAllPractice() {
@@ -2196,9 +2363,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   }
 
   function startPractice() {
-    const checked = [...document.querySelectorAll('.practice-chk:checked')].map(c => parseInt(c.value));
-    if (checked.length === 0) { alert(currentLang === 'en' ? 'Select at least one question!' : 'অন্তত একটি প্রশ্ন সিলেক্ট করুন!'); return; }
-    practiceQueue = checked.map(i => ({ ...database[i], origIndex: i }));
+    if (practiceSelected.size === 0) { alert(currentLang === 'en' ? 'Select at least one question!' : 'অন্তত একটি প্রশ্ন সিলেক্ট করুন!'); return; }
+    practiceQueue = [...practiceSelected].map(i => ({ ...database[i], origIndex: i }));
     if (document.getElementById('randomOrder').checked) {
       practiceQueue.sort(() => Math.random() - 0.5);
     }
@@ -2902,6 +3068,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     // form removed
     renderSurahQAList(s);
     document.querySelector('main').scrollTop = 0;
+    // Push state for Android/browser back button
+    window.history.pushState({ surahDetail: id }, '', '');
   }
 
   function renderSurahQAList(s) {
@@ -2920,22 +3088,22 @@ Respond ONLY with valid JSON in this exact format, nothing else:
       const note     = item.note     || '';
 
       return `
-      <div id="sq-${s.id}-${i}" style="background:var(--surface); border:1.5px solid var(--border); border-radius:14px; overflow:hidden; animation:fadeUp 0.3s ease both; margin-bottom:0;">
+      <div id="sq-${s.id}-${i}" style="background:var(--surface); border:1.5px solid var(--border); border-radius:14px; overflow:hidden; width:100%; box-sizing:border-box;">
 
         <!-- VIEW MODE -->
         <div id="sq-view-${s.id}-${i}">
 
           <!-- Ayat Header bar (clickable to toggle) -->
-          <div onclick="toggleAyatBody('${s.id}',${i})" style="background:linear-gradient(135deg,var(--text),#3a3020); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none;">
-            <div style="color:var(--gold); font-family:'Crimson Pro',serif; font-size:15px; font-weight:600; letter-spacing:0.3px;">
+          <div onclick="toggleAyatBody('${s.id}',${i})" style="background:linear-gradient(135deg,var(--text),#3a3020); padding:0 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; height:52px; min-height:52px; max-height:52px; overflow:hidden;">
+            <div style="color:var(--gold); font-family:'Crimson Pro',serif; font-size:15px; font-weight:600; letter-spacing:0.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0;">
               📖 ${escHtml(title)}
             </div>
             <div style="display:flex; gap:6px; align-items:center;">
               <span id="sq-arrow-${s.id}-${i}" style="color:rgba(245,240,232,0.5); font-size:13px; transition:transform 0.2s;">▼</span>
               <button onclick="event.stopPropagation(); startSurahEdit('${s.id}',${i})" id="sq-edit-btn-${s.id}-${i}"
-                style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; color:rgba(245,240,232,0.8); font-family:'Hind Siliguri',sans-serif;">✏️</button>
+                style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:6px; width:32px; height:32px; font-size:13px; cursor:pointer; color:rgba(245,240,232,0.8); font-family:'Hind Siliguri',sans-serif; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✏️</button>
               <button onclick="event.stopPropagation(); deleteSurahQA('${s.id}',${i})"
-                style="background:rgba(192,57,43,0.3); border:1px solid rgba(192,57,43,0.5); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; color:#f08080; font-family:'Hind Siliguri',sans-serif;">🗑️</button>
+                style="background:rgba(192,57,43,0.3); border:1px solid rgba(192,57,43,0.5); border-radius:6px; width:32px; height:32px; font-size:13px; cursor:pointer; color:#f08080; font-family:'Hind Siliguri',sans-serif; display:flex; align-items:center; justify-content:center; flex-shrink:0;">🗑️</button>
             </div>
           </div>
 
@@ -4182,6 +4350,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
 
   function closeSurahDetail() {
     activeSurahId = null;
+    document.getElementById('surah-list-view').style.display = 'block';
+    document.getElementById('surah-detail-view').style.display = 'none';
     renderSurahList();
   }
 
@@ -4401,6 +4571,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.renderSurahList = renderSurahList;
   window.populateSelect = populateSelect;
   window.initPracticeSetup = initPracticeSetup;
+  window.filterPracticeList = filterPracticeList;
+  window.togglePracticeItem = togglePracticeItem;
   window.loadDatabase = loadDatabase;
   window.database = database;
   window.notes = notes;
@@ -4412,6 +4584,25 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.confirmRenameSurah = confirmRenameSurah;
   window.openSurahDetail = openSurahDetail;
   window.closeSurahDetail = closeSurahDetail;
+
+  // Handle Android/browser hardware back button
+  window.addEventListener('popstate', function(e) {
+    // If surah detail is open, go back to list
+    const detailView = document.getElementById('surah-detail-view');
+    if (detailView && detailView.style.display !== 'none') {
+      closeSurahDetail();
+      return;
+    }
+    // If any modal is open, close it
+    const modals = document.querySelectorAll('.modal-overlay.show, [id$="Modal"][style*="flex"]');
+    if (modals.length > 0) {
+      modals.forEach(m => {
+        m.classList.remove('show');
+        m.style.display = 'none';
+      });
+      return;
+    }
+  });
   window.openAddQAToSurah = openAddQAToSurah;
 
   window.toggleSurahAns = toggleSurahAns;
@@ -4952,6 +5143,37 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('openrouter_api_key');
     if (saved) document.getElementById('ai-api-key').value = saved;
+  });
+
+  // ── Mobile UX Improvements ──────────────────────────────────────
+  // Auto-resize textareas
+  document.addEventListener('input', function(e) {
+    if (e.target.tagName === 'TEXTAREA' && !e.target.hasAttribute('data-no-resize')) {
+      const el = e.target;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 300) + 'px';
+    }
+  });
+
+  // Dismiss keyboard on scroll (mobile)
+  let lastScrollY = 0;
+  document.querySelector('main').addEventListener('scroll', function() {
+    const diff = Math.abs(this.scrollTop - lastScrollY);
+    if (diff > 50) {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+        active.blur();
+      }
+    }
+    lastScrollY = this.scrollTop;
+  }, { passive: true });
+
+  // Prevent double-tap zoom on buttons
+  document.querySelectorAll('button, .tab').forEach(el => {
+    el.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      this.click();
+    }, { passive: false });
   });
 </script>
 
