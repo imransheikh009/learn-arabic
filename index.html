@@ -1160,16 +1160,17 @@
 
     <!-- Surah Detail View -->
     <div id="surah-detail-view" style="display:none;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <!-- Row 1: Back + Title + Rename -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
         <button onclick="closeSurahDetail()" style="
           padding:7px 14px; background:transparent; border:1.5px solid var(--border);
           border-radius:8px; font-size:13px; cursor:pointer; color:var(--muted);
-          font-family:'Hind Siliguri',sans-serif; font-weight:600;">
+          font-family:'Hind Siliguri',sans-serif; font-weight:600; white-space:nowrap; flex-shrink:0;">
           ← ফিরে যান
         </button>
-        <div style="flex:1; min-width:0;">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <div id="surahDetailName" style="font-family:'Crimson Pro',serif; font-size:22px; font-weight:600; color:var(--text);"></div>
+        <div style="flex:1; min-width:0; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div id="surahDetailName" style="font-family:'Crimson Pro',serif; font-size:20px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
             <button onclick="openRenameSurahModal()" style="
               padding:3px 10px; background:transparent; border:1.5px solid var(--border);
               border-radius:6px; font-size:11px; cursor:pointer; color:var(--muted);
@@ -1179,25 +1180,25 @@
           </div>
           <div id="surahDetailCount" style="font-size:12px; color:var(--muted);"></div>
         </div>
-        <!-- Search in middle -->
+      </div>
+      <!-- Row 2: Search + Count Input + Add Button -->
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
         <div style="flex:1; min-width:0; position:relative;">
           <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span>
           <input type="text" id="ayatSearchInput" placeholder="আয়াত খুঁজুন..." oninput="searchAyat()"
             style="padding-left:36px; margin-bottom:0; font-size:13px; width:100%;" />
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <input type="number" id="ayatCountInput" min="1" max="286" value="1"
-            style="width:54px; padding:7px 8px; border:1.5px solid var(--border); border-radius:8px;
-                   background:var(--bg); color:var(--text); font-family:'Hind Siliguri',sans-serif;
-                   font-size:14px; font-weight:600; text-align:center; outline:none; margin-bottom:0;"
-            onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter') addAyatByCount()" />
-          <button onclick="addAyatByCount()" style="
-            padding:7px 14px; background:var(--text); color:var(--bg); border:none;
-            border-radius:8px; font-size:13px; cursor:pointer; font-family:'Hind Siliguri',sans-serif; font-weight:600;">
-            ✚ আয়াত যোগ
-          </button>
-        </div>
+        <input type="number" id="ayatCountInput" min="1" max="286" value="1"
+          style="width:52px; padding:7px 8px; border:1.5px solid var(--border); border-radius:8px;
+                 background:var(--bg); color:var(--text); font-family:'Hind Siliguri',sans-serif;
+                 font-size:14px; font-weight:600; text-align:center; outline:none; margin-bottom:0; flex-shrink:0;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter') addAyatByCount()" />
+        <button onclick="addAyatByCount()" style="
+          padding:7px 12px; background:var(--text); color:var(--bg); border:none;
+          border-radius:8px; font-size:13px; cursor:pointer; font-family:'Hind Siliguri',sans-serif; font-weight:600; white-space:nowrap; flex-shrink:0;">
+          ✚ আয়াত যোগ
+        </button>
       </div>
       <div id="ayatSearchCount" style="font-size:12px; color:var(--muted); margin-bottom:10px;"></div>
 
@@ -3336,21 +3337,48 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     const s = surahs.find(x => x.id === activeSurahId);
     if (!s || !s.qaList) return;
 
-    const items = document.querySelectorAll('#surahQAList > div[id^="sq-"]');
+    const isNumSearch = /^\d+$/.test(q);
+    const numVal = isNumSearch ? parseInt(q, 10) : null;
+
     let visible = 0;
-    items.forEach((el, idx) => {
-      const item = s.qaList[idx];
-      if (!item) return;
-      const title = (item.title || item.q || '').toLowerCase();
-      const bangla = (item.bangla || item.a || '').toLowerCase();
-      const note = (item.note || '').toLowerCase();
-      const vocabText = (item.vocabList || []).map(v => (v.word || '') + ' ' + (v.answer || '')).join(' ').toLowerCase();
-      const match = !q || title.includes(q) || bangla.includes(q) || note.includes(q) || vocabText.includes(q);
+    s.qaList.forEach((item, idx) => {
+      const el = document.getElementById('sq-' + s.id + '-' + idx);
+      if (!el) return;
+      const ayatNum = idx + 1;
+      const title    = (item.title    || item.q  || '').toLowerCase();
+      const bangla   = (item.bangla   || item.a  || '').toLowerCase();
+      const arabic   = (item.arabic   || '').toLowerCase();
+      const uccharon = (item.uccharon || '').toLowerCase();
+      const note     = (item.note     || '').toLowerCase();
+      const vocabText = (item.vocabList || []).map(v => ((v.word || '') + ' ' + (v.answer || '')).toLowerCase()).join(' ');
+      const match = !q
+        || (isNumSearch && ayatNum === numVal)
+        || (!isNumSearch && (title.includes(q) || bangla.includes(q) || arabic.includes(q) || uccharon.includes(q) || note.includes(q) || vocabText.includes(q)));
       el.style.display = match ? '' : 'none';
-      if (match) visible++;
+      if (match) {
+        visible++;
+        // Auto-expand matched ayat so content is visible
+        const body = document.getElementById('sq-body-' + s.id + '-' + idx);
+        const arrow = document.getElementById('sq-arrow-' + s.id + '-' + idx);
+        if (body && q) {
+          body.style.display = 'block';
+          if (arrow) arrow.style.transform = 'rotate(180deg)';
+          // Activate first tab so content is visible
+          switchAyatTab(s.id, idx, 'uccharon');
+        } else if (body && !q) {
+          body.style.display = 'none';
+          if (arrow) arrow.style.transform = '';
+        }
+      } else {
+        // Collapse hidden ones
+        const body = document.getElementById('sq-body-' + s.id + '-' + idx);
+        const arrow = document.getElementById('sq-arrow-' + s.id + '-' + idx);
+        if (body) body.style.display = 'none';
+        if (arrow) arrow.style.transform = '';
+      }
     });
 
-    countEl.textContent = q ? (visible + 'টি আয়াত পাওয়া গেছে') : '';
+    countEl.textContent = q ? (visible + ' টি আয়াত পাওয়া গেছে') : '';
   }
   window.searchAyat = searchAyat;
 
