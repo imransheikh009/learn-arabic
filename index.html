@@ -554,6 +554,9 @@
   /* Prevent text selection on buttons */
   button, .tab { user-select: none; -webkit-user-select: none; }
 
+  /* Prevent double-tap zoom on all buttons globally */
+  button { touch-action: manipulation; }
+
   @media (max-width: 600px) {
     .stats-bar { gap: 14px; }
     main { padding: 16px 14px 16px; }
@@ -971,37 +974,50 @@
   <!-- QUIZ PANEL -->
   <div class="panel" id="panel-quiz">
 
-    <div class="quiz-select">
-      <label data-bn="প্রশ্ন খুঁজুন বা বেছে নিন" data-en="Search or Select a Question">প্রশ্ন খুঁজুন বা বেছে নিন</label>
-      <div style="position:relative; margin-bottom:10px;">
-        <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none;">🔍</span>
-        <input type="text" id="quizSearch" placeholder="প্রশ্ন খুঁজুন..." oninput="filterQuizList()"
-          style="padding-left:42px; margin-bottom:0; font-size:15px;" />
+    <!-- Question Selector -->
+    <div id="quizSelectView">
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <button onclick="loadRandomQuestion()" style="flex:1; padding:13px; background:var(--text); color:var(--bg); border:none; border-radius:10px; font-family:'Hind Siliguri',sans-serif; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; touch-action:manipulation;">
+          🎲 র‍্যান্ডম প্রশ্ন
+        </button>
       </div>
-      <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" id="quizSearchCount"></div>
-      <div id="quizQuestionList" style="display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; padding-right:4px;"></div>
+      <div class="quiz-select">
+        <label>বা নিজে বেছে নিন</label>
+        <div style="position:relative; margin-bottom:10px;">
+          <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none;">🔍</span>
+          <input type="text" id="quizSearch" placeholder="প্রশ্ন খুঁজুন..." oninput="filterQuizList()"
+            style="padding-left:42px; margin-bottom:0; font-size:15px;" />
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" id="quizSearchCount"></div>
+        <div id="quizQuestionList" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto; padding-right:4px;"></div>
+      </div>
     </div>
 
+    <!-- Question Area -->
     <div id="questionArea" style="display:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <button onclick="backToQuizList()" style="padding:7px 14px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; font-weight:600; cursor:pointer; color:var(--muted); touch-action:manipulation;">← প্রশ্ন বদলান</button>
+        <div id="quizCounter" style="font-size:12px; color:var(--muted); font-weight:600;"></div>
+      </div>
       <div class="question-card">
         <div class="q-label" data-bn="প্রশ্ন" data-en="Question">প্রশ্ন</div>
         <div class="q-text" id="questionText"></div>
       </div>
       <div class="answer-area">
         <label data-bn="আপনার উত্তর" data-en="Your Answer">আপনার উত্তর</label>
-        <textarea id="userAnswer" rows="4" data-placeholder-bn="এখানে উত্তর লিখুন..." data-placeholder-en="Write your answer here..." placeholder="এখানে উত্তর লিখুন..."></textarea>
+        <textarea id="userAnswer" rows="4" placeholder="এখানে উত্তর লিখুন..."></textarea>
       </div>
-      <button class="submit-btn" id="submitBtn" onclick="evaluateAnswer()" data-bn="🔍 উত্তর যাচাই করুন" data-en="🔍 Check Answer">🔍 উত্তর যাচাই করুন</button>
+      <button class="submit-btn" id="submitBtn" onclick="evaluateAnswer()">🔍 উত্তর যাচাই করুন</button>
       <div class="eval-loading" id="evalLoading">
         <div class="spinner"></div>
-        <span data-bn="AI মূল্যায়ন করছে..." data-en="AI is evaluating...">AI মূল্যায়ন করছে...</span>
+        <span>মূল্যায়ন করছে...</span>
       </div>
       <div class="error-box" id="evalError"></div>
       <div class="result-card" id="resultCard">
         <span class="result-icon" id="resultIcon"></span>
         <div class="result-text" id="resultText"></div>
       </div>
-      <button class="next-btn" id="nextBtn" onclick="nextQuestion()" data-bn="পরবর্তী প্রশ্ন →" data-en="Next Question →">পরবর্তী প্রশ্ন →</button>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">🎲 পরবর্তী র‍্যান্ডম প্রশ্ন</button>
     </div>
   </div>
 
@@ -1435,8 +1451,15 @@
             window._currentSurahs = d;
             window.surahs = d;
             surahs = d;
-            if (window.renderSurahList && document.getElementById('panel-surah').classList.contains('active')) {
-              window.renderSurahList();
+            if (document.getElementById('panel-surah').classList.contains('active')) {
+              // If detail view is open, refresh it without closing
+              const detailView = document.getElementById('surah-detail-view');
+              if (detailView && detailView.style.display !== 'none' && window.activeSurahId) {
+                const s = (surahs || []).find(x => x.id == window.activeSurahId);
+                if (s && window.renderSurahQAList) window.renderSurahQAList(s);
+              } else if (window.renderSurahList) {
+                window.renderSurahList();
+              }
             }
           }
         }
@@ -2058,7 +2081,20 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   // ─── Quiz Panel ──────────────────────────────────────────
   function populateSelect() {
     document.getElementById('questionArea').style.display = 'none';
+    document.getElementById('quizSelectView').style.display = 'block';
     filterQuizList();
+  }
+
+  function backToQuizList() {
+    document.getElementById('questionArea').style.display = 'none';
+    document.getElementById('quizSelectView').style.display = 'block';
+    document.querySelector('main').scrollTop = 0;
+  }
+
+  function loadRandomQuestion() {
+    if (!database.length) { alert('কোনো প্রশ্ন নেই!'); return; }
+    const idx = Math.floor(Math.random() * database.length);
+    loadQuestion(idx);
   }
 
   function filterQuizList() {
@@ -2120,10 +2156,11 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     document.getElementById('submitBtn').disabled = false;
     document.getElementById('submitBtn').textContent = isEn ? '🔍 Check Answer' : '🔍 উত্তর যাচাই করুন';
     document.getElementById('questionArea').style.display = 'block';
-    // Clear search & scroll to question
-    if (document.getElementById('quizSearch')) document.getElementById('quizSearch').value = '';
-    filterQuizList();
-    document.querySelector('main').scrollTop = 300;
+    document.getElementById('quizSelectView').style.display = 'none';
+    // Update counter
+    const counter = document.getElementById('quizCounter');
+    if (counter) counter.textContent = (currentQIndex + 1) + ' / ' + database.length;
+    document.querySelector('main').scrollTop = 0;
   }
 
   // ── Smart Local Evaluator (no API needed) ──────────────────
@@ -2216,17 +2253,12 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   }
 
   function nextQuestion() {
-    const isEn = currentLang === 'en';
-    const next = (currentQIndex + 1) % database.length;
-    currentQIndex = next;
-    document.getElementById('questionText').textContent = database[currentQIndex].q;
-    document.getElementById('userAnswer').value = '';
-    document.getElementById('userAnswer').placeholder = isEn ? 'Write your answer here...' : 'এখানে উত্তর লিখুন...';
-    document.getElementById('resultCard').style.display = 'none';
-    document.getElementById('nextBtn').style.display = 'none';
-    document.getElementById('evalError').style.display = 'none';
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('submitBtn').textContent = isEn ? '🔍 Check Answer' : '🔍 উত্তর যাচাই করুন';
+    if (!database.length) return;
+    let next = currentQIndex;
+    if (database.length > 1) {
+      do { next = Math.floor(Math.random() * database.length); } while (next === currentQIndex);
+    }
+    loadQuestion(next);
   }
 
   function updateStats() {
@@ -3061,7 +3093,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
 
   function openSurahDetail(id) {
     activeSurahId = id;
-    const s = surahs.find(x => x.id === id);
+    window.activeSurahId = id;
+    const s = surahs.find(x => x.id == id);
     if (!s) return;
     document.getElementById('surah-list-view').style.display = 'none';
     document.getElementById('surah-detail-view').style.display = 'block';
@@ -3313,15 +3346,18 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                 ${(item.myNoteList && item.myNoteList.length > 0) ? (() => { setTimeout(() => renderMyNoteList(s.id, i, item.myNoteList), 0); return '<div style="font-size:12px;color:var(--muted);padding:4px 0;">লোড হচ্ছে...</div>'; })() : '<div style="font-size:13px; color:var(--muted); padding:4px 0;">No entries yet</div>'}
               </div>
             </div>
+          </div><!-- end sq-tabs-area -->
 
         <!-- EDIT MODE -->
-        <div id="sq-edit-${s.id}-${i}" style="display:none; padding:16px; background:var(--surface2);">
-          <label style="margin-bottom:4px;">🔢 আয়াত নম্বর</label>
-          <input type="text" id="sq-etitle-${s.id}-${i}" value="${escHtml(title)}" style="margin-bottom:14px;" />
+        <div id="sq-edit-${s.id}-${i}" style="display:none; padding:14px 16px; background:var(--surface2); border-top:2px solid var(--gold);">
+          <label style="margin-bottom:6px; font-size:12px;">✏️ শিরোনাম / আয়াত নম্বর</label>
+          <input type="text" id="sq-etitle-${s.id}-${i}" value="${escHtml(title)}" placeholder="যেমন: আয়াত ১, বিসমিল্লাহ..." style="margin-bottom:12px; font-size:15px;" />
           <div style="display:flex; gap:8px;">
-            <button onclick="saveSurahEdit('${s.id}',${i})" style="flex:1; padding:10px; background:var(--text); color:var(--bg); border:none; border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:14px; font-weight:700; cursor:pointer;">✅ সেভ</button>
-            <button onclick="cancelSurahEdit('${s.id}',${i})" style="padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">বাতিল</button>
+            <button data-sid="${s.id}" data-idx="${i}" onclick="saveSurahEdit(this.dataset.sid, this.dataset.idx)" style="flex:1; padding:10px; background:var(--text); color:var(--bg); border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:sans-serif;">✅ সেভ</button>
+            <button data-sid="${s.id}" data-idx="${i}" onclick="cancelSurahEdit(this.dataset.sid, this.dataset.idx)" style="padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-size:13px; cursor:pointer; color:var(--muted); font-family:sans-serif;">বাতিল</button>
           </div>
+        </div><!-- end edit mode -->
+
           </div><!-- end collapsible body -->
         </div><!-- end view mode -->
 
@@ -3334,7 +3370,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   function searchAyat() {
     const q = (document.getElementById('ayatSearchInput').value || '').trim().toLowerCase();
     const countEl = document.getElementById('ayatSearchCount');
-    const s = surahs.find(x => x.id === activeSurahId);
+    const s = surahs.find(x => x.id == activeSurahId);
     if (!s || !s.qaList) return;
 
     const isNumSearch = /^\d+$/.test(q);
@@ -3387,8 +3423,31 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     const arrow = document.getElementById('sq-arrow-' + sid + '-' + i);
     if (!body) return;
     const isHidden = body.style.display === 'none';
-    body.style.display  = isHidden ? 'block' : 'none';
+
+    // Accordion: close all other open ayats first
+    if (isHidden) {
+      const s = surahs.find(x => x.id == sid);
+      if (s && s.qaList) {
+        s.qaList.forEach((_, j) => {
+          if (j == i) return;
+          const otherBody  = document.getElementById('sq-body-'  + sid + '-' + j);
+          const otherArrow = document.getElementById('sq-arrow-' + sid + '-' + j);
+          if (otherBody && otherBody.style.display !== 'none') {
+            otherBody.style.display = 'none';
+            if (otherArrow) otherArrow.style.transform = 'rotate(0deg)';
+            const otherEdit = document.getElementById('sq-edit-' + sid + '-' + j);
+            if (otherEdit && otherEdit.style.display !== 'none') cancelSurahEdit(sid, j);
+          }
+        });
+      }
+    }
+
+    body.style.display = isHidden ? 'block' : 'none';
     if (arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    if (!isHidden) {
+      const editDiv = document.getElementById('sq-edit-' + sid + '-' + i);
+      if (editDiv && editDiv.style.display !== 'none') cancelSurahEdit(sid, i);
+    }
   }
   window.toggleAyatBody = toggleAyatBody;
 
@@ -3640,7 +3699,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     const inp = document.getElementById(`sq-${p}-input-${sid}-${i}`);
     if (!inp) return;
     const val = inp.value.trim();
-    const s = surahs.find(x => x.id === sid);
+    const s = surahs.find(x => x.id == sid);
     if (!s || !s.qaList || !s.qaList[i]) return;
     s.qaList[i][field] = val;
     await saveSurahs();
@@ -4336,36 +4395,52 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     if (body) body.style.display = 'block';
     if (arrow) arrow.style.transform = 'rotate(180deg)';
     // Show edit form, hide tabs content
-    document.getElementById(`sq-edit-${sid}-${i}`).style.display = 'block';
+    const editDiv = document.getElementById(`sq-edit-${sid}-${i}`);
+    if (editDiv) editDiv.style.display = 'block';
     // Hide the tabs area inside body
     const tabsArea = document.getElementById('sq-tabs-area-' + sid + '-' + i);
     if (tabsArea) tabsArea.style.display = 'none';
-    document.getElementById(`sq-edit-btn-${sid}-${i}`).style.display = 'none';
+    const editBtn = document.getElementById(`sq-edit-btn-${sid}-${i}`);
+    if (editBtn) editBtn.style.display = 'none';
+    // Focus the input
+    setTimeout(() => {
+      const inp = document.getElementById(`sq-etitle-${sid}-${i}`);
+      if (inp) { inp.focus(); inp.select(); }
+    }, 50);
   }
 
   function cancelSurahEdit(sid, i) {
-    document.getElementById(`sq-edit-${sid}-${i}`).style.display = 'none';
+    i = parseInt(i);
+    const editDiv = document.getElementById('sq-edit-' + sid + '-' + i);
+    if (editDiv) editDiv.style.display = 'none';
     const tabsArea = document.getElementById('sq-tabs-area-' + sid + '-' + i);
     if (tabsArea) tabsArea.style.display = 'block';
-    document.getElementById(`sq-edit-btn-${sid}-${i}`).style.display = 'block';
+    const editBtn = document.getElementById('sq-edit-btn-' + sid + '-' + i);
+    if (editBtn) editBtn.style.display = 'flex';
   }
 
   async function saveSurahEdit(sid, i) {
+    i = parseInt(i);
     const s = surahs.find(x => x.id == sid);
     if (!s) return;
-    const title = document.getElementById(`sq-etitle-${sid}-${i}`).value.trim();
-    if (!title) { alert('আয়াত নম্বর আবশ্যক!'); return; }
+    const titleEl = document.getElementById('sq-etitle-' + sid + '-' + i);
+    if (!titleEl) return;
+    const title = titleEl.value.trim();
+    if (!title) { alert('শিরোনাম আবশ্যক!'); return; }
     s.qaList[i] = { ...s.qaList[i], title };
+    // Pre-update _currentSurahs so Firebase listener does not re-render on its own callback
+    window._currentSurahs = JSON.parse(JSON.stringify(surahs));
     await saveSurahs();
+    // Re-render the detail view with updated data
     renderSurahQAList(s);
     showToast('✅ সেভ হয়েছে!', 'green');
-    // Re-expand the edited ayat
+    // Re-expand the edited ayat after re-render
     setTimeout(() => {
       const body = document.getElementById('sq-body-' + sid + '-' + i);
       const arrow = document.getElementById('sq-arrow-' + sid + '-' + i);
       if (body) body.style.display = 'block';
       if (arrow) arrow.style.transform = 'rotate(180deg)';
-    }, 50);
+    }, 80);
   }
 
   async function deleteSurahQA(sid, i) {
@@ -4378,6 +4453,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
 
   function closeSurahDetail() {
     activeSurahId = null;
+    window.activeSurahId = null;
     document.getElementById('surah-list-view').style.display = 'block';
     document.getElementById('surah-detail-view').style.display = 'none';
     renderSurahList();
@@ -4394,7 +4470,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
       alert('সঠিক সংখ্যা দিন (১ থেকে ২৮৬)!');
       return;
     }
-    const s = surahs.find(x => x.id === activeSurahId);
+    const s = surahs.find(x => x.id == activeSurahId);
     if (!s) return;
     if (!s.qaList) s.qaList = [];
     const startNum = s.qaList.length + 1;
@@ -4415,7 +4491,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.addAyatByCount = addAyatByCount;
 
   async function promptAddAyatNumber() {
-    const s = surahs.find(x => x.id === activeSurahId);
+    const s = surahs.find(x => x.id == activeSurahId);
     if (!s) return;
     if (!s.qaList) s.qaList = [];
 
@@ -4462,7 +4538,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
 
     if (!title || !bangla) { alert('আয়াত নম্বর এবং বাংলা অর্থ দেওয়া আবশ্যক!'); return; }
 
-    const s = surahs.find(x => x.id === activeSurahId);
+    const s = surahs.find(x => x.id == activeSurahId);
     if (!s) return;
     if (!s.qaList) s.qaList = [];
 
@@ -4514,7 +4590,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   }
 
   function openRenameSurahModal() {
-    const s = surahs.find(x => x.id === activeSurahId);
+    const s = surahs.find(x => x.id == activeSurahId);
     if (!s) return;
     document.getElementById('renameSurahName').value = s.name || '';
     document.getElementById('renameSurahArabic').value = s.arabic || '';
@@ -4530,7 +4606,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     const name = document.getElementById('renameSurahName').value.trim();
     const arabic = document.getElementById('renameSurahArabic').value.trim();
     if (!name) { alert('সূরার নাম দিন!'); return; }
-    const s = surahs.find(x => x.id === activeSurahId);
+    const s = surahs.find(x => x.id == activeSurahId);
     if (!s) return;
     s.name = name;
     s.arabic = arabic;
@@ -4545,7 +4621,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   });
 
   async function deleteSurah(id) {
-    const s = surahs.find(x => x.id === id);
+    const s = surahs.find(x => x.id == id);
     if (!s) return;
     window._pendingSurahDeleteId = id;
     document.getElementById('surahDeleteName').textContent = '"' + s.name + '" সূরাটি এবং এর সকল প্রশ্ন মুছে ফেলবেন?';
@@ -4597,7 +4673,10 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.addNewNote = addNewNote;
   window.searchNotes = searchNotes;
   window.renderSurahList = renderSurahList;
+  window.renderSurahQAList = renderSurahQAList;
   window.populateSelect = populateSelect;
+  window.loadRandomQuestion = loadRandomQuestion;
+  window.backToQuizList = backToQuizList;
   window.initPracticeSetup = initPracticeSetup;
   window.filterPracticeList = filterPracticeList;
   window.togglePracticeItem = togglePracticeItem;
@@ -5196,13 +5275,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     lastScrollY = this.scrollTop;
   }, { passive: true });
 
-  // Prevent double-tap zoom on buttons
-  document.querySelectorAll('button, .tab').forEach(el => {
-    el.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      this.click();
-    }, { passive: false });
-  });
+  // Prevent double-tap zoom via CSS touch-action (no JS needed, no event conflicts)
+  // touch-action: manipulation is already set on buttons via inline styles
 </script>
 
 
