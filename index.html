@@ -961,6 +961,19 @@
       <label>Correct Answer</label>
       <input type="text" id="newAnswer" placeholder="Write correct answer..." />
       <button class="btn-primary" onclick="addQA()">✚ Add</button>
+
+      <div style="margin-top:18px; padding-top:16px; border-top:1.5px dashed var(--border);">
+        <button type="button" onclick="toggleBulkAdd()" id="bulkAddToggleBtn" style="background:transparent; border:1.5px solid var(--gold); color:var(--gold); padding:8px 14px; border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; font-weight:600; cursor:pointer; touch-action:manipulation;">
+          📋 একসাথে অনেকগুলো Add করুন (Bulk Add)
+        </button>
+        <div id="bulkAddBox" style="display:none; margin-top:14px;">
+          <label>প্রতি লাইনে একটি শব্দ — <b>শব্দ = অর্থ</b> ফরম্যাটে লিখুন</label>
+          <textarea id="bulkAddText" rows="6" placeholder="উদাহরণ:&#10;کتاب = বই&#10;قلم = কলম&#10;بیت = বাড়ি"></textarea>
+          <div style="font-size:12px; color:var(--muted); margin:-8px 0 12px;">প্রতিটি লাইনে <b>=</b> চিহ্ন দিয়ে শব্দ ও অর্থ আলাদা করুন। একসাথে যতগুলো লাইন দেবেন, সবগুলো একবারে Database-এ যোগ হয়ে যাবে।</div>
+          <button class="btn-primary" onclick="bulkAddQA()">✚ সব একসাথে Add করুন</button>
+          <div id="bulkAddResult" style="font-size:12px; color:var(--muted); margin-top:8px;"></div>
+        </div>
+      </div>
     </div>
 
     <div style="position:relative; margin-bottom:14px;">
@@ -1720,6 +1733,51 @@
     document.getElementById('newAnswer').value = '';
     renderDB();
     await saveDatabase();
+  }
+
+  function toggleBulkAdd() {
+    const box = document.getElementById('bulkAddBox');
+    const btn = document.getElementById('bulkAddToggleBtn');
+    const show = box.style.display === 'none';
+    box.style.display = show ? 'block' : 'none';
+    if (show) document.getElementById('bulkAddText').focus();
+  }
+
+  async function bulkAddQA() {
+    const raw = document.getElementById('bulkAddText').value;
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const resultEl = document.getElementById('bulkAddResult');
+
+    if (lines.length === 0) {
+      resultEl.style.color = 'var(--incorrect)';
+      resultEl.textContent = '❌ কিছু লেখা হয়নি!';
+      return;
+    }
+
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    let added = 0;
+    let skipped = 0;
+
+    lines.forEach(line => {
+      // Accept =, -, or : as the separator between word and meaning
+      const sepMatch = line.match(/^(.*?)\s*[=\-:]\s*(.+)$/);
+      if (!sepMatch) { skipped++; return; }
+      const q = sepMatch[1].trim();
+      const a = sepMatch[2].trim();
+      if (!q || !a) { skipped++; return; }
+      database.push({ q, a, date, time });
+      added++;
+    });
+
+    renderDB();
+    await saveDatabase();
+
+    document.getElementById('bulkAddText').value = '';
+    resultEl.style.color = skipped > 0 ? 'var(--partial)' : 'var(--correct)';
+    resultEl.textContent = `✅ ${added} টি শব্দ যোগ হয়েছে` + (skipped > 0 ? ` · ⚠️ ${skipped} টি লাইন বাদ পড়েছে (ফরম্যাট ঠিক নেই — "শব্দ = অর্থ" ফরম্যাটে দিন)` : '');
   }
 
   async function generateQA() {
@@ -2689,7 +2747,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
           </div>
           <div style="display:${isOpen ? 'flex' : 'none'}; flex-direction:column; gap:10px; padding:12px;">
             ${count === 0 ? `<div style="text-align:center; color:var(--muted); font-size:13px; padding:16px 0;">${isEn ? '📭 No notes in this folder' : '📭 এই ফোল্ডারে কোনো নোট নেই'}</div>` :
-              folderNotes.map(note => renderNoteCard(note, isEn)).join('')
+              folderNotes.map((note, ni) => renderNoteCard(note, isEn, ni + 1)).join('')
             }
           </div>
         </div>`;
@@ -2698,7 +2756,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     list.innerHTML = html;
   }
 
-  function renderNoteCard(note, isEn) {
+  function renderNoteCard(note, isEn, num) {
     const preview = note.text ? note.text.slice(0, 90) + (note.text.length > 90 ? '\u2026' : '') : (isEn ? 'Empty note' : '\u0996\u09be\u09b2\u09bf \u09a8\u09cb\u099f');
     return `
       <div class="db-item" style="flex-direction:column; align-items:stretch; gap:6px; margin:0; cursor:pointer;" id="note-card-${note.id}" onclick="openNoteFullscreen(${note.id})">
@@ -2815,8 +2873,8 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   function addNewNote(folder = 'সাধারণ') {
     const isEn = currentLang === 'en';
     const id = Date.now();
-    const num = notes.length + 1;
-    const title = isEn ? `Note ${num}` : `নোট ${toBanglaNum(num)}`;
+    const num = notes.filter(n => (n.folder || 'সাধারণ') === folder).length + 1;
+    const title = isEn ? `Ayat ${num}` : `আয়াত ${toBanglaNum(num)}`;
     const now = new Date();
     const date = now.toLocaleDateString('en-GB');
     const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -3181,6 +3239,10 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                   style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--muted); border:1.5px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
                   🔍
                 </button>
+                <button onclick="toggleVocabDBPicker('${s.id}',${i})" id="sq-vocab-dbpick-toggle-${s.id}-${i}"
+                  style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--gold); border:1.5px solid var(--gold); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
+                  📂 Database থেকে বাছাই
+                </button>
                 <div id="sq-vocab-search-box-${s.id}-${i}" style="display:none; flex:1; position:relative;">
                   <input type="text" id="sq-vocab-search-${s.id}-${i}" placeholder="Search vocabulary..."
                     oninput="filterVocabList('${s.id}',${i})"
@@ -3188,6 +3250,16 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                 </div>
               </div>
               <div id="sq-vocab-search-count-${s.id}-${i}" style="font-size:11px; color:var(--muted); margin-top:-8px; margin-bottom:8px;"></div>
+
+              <!-- Pick from main Database — hidden by default -->
+              <div id="sq-vocab-dbpick-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
+                <label>🔍 মূল Database থেকে শব্দ খুঁজুন</label>
+                <input type="text" id="sq-vocab-dbpick-search-${s.id}-${i}" placeholder="খুঁজুন..."
+                  oninput="renderVocabDBPicker('${s.id}',${i})" style="font-size:14px; margin-bottom:10px;" />
+                <div id="sq-vocab-dbpick-list-${s.id}-${i}" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;"></div>
+                <button onclick="toggleVocabDBPicker('${s.id}',${i})" style="margin-top:10px; padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">✕ বন্ধ</button>
+              </div>
+
               <!-- Add Q&A form — hidden by default -->
               <div id="sq-vocab-form-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
                 <label>❓ Question</label>
@@ -3217,6 +3289,10 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                   style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--muted); border:1.5px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
                   🔍
                 </button>
+                <button onclick="toggleBanglaDBPicker('${s.id}',${i})" id="sq-bn-dbpick-toggle-${s.id}-${i}"
+                  style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--gold); border:1.5px solid var(--gold); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
+                  📂 Database থেকে বাছাই
+                </button>
                 <div id="sq-bn-search-box-${s.id}-${i}" style="display:none; flex:1; position:relative;">
                   <input type="text" id="sq-bn-search-${s.id}-${i}" placeholder="Search..."
                     oninput="filterBanglaList('${s.id}',${i})"
@@ -3224,6 +3300,14 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                 </div>
               </div>
               <div id="sq-bn-search-count-${s.id}-${i}" style="font-size:11px; color:var(--muted); margin-top:-8px; margin-bottom:8px;"></div>
+              <!-- Pick from main Database -->
+              <div id="sq-bn-dbpick-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
+                <label>🔍 মূল Database থেকে খুঁজুন</label>
+                <input type="text" id="sq-bn-dbpick-search-${s.id}-${i}" placeholder="খুঁজুন..."
+                  oninput="renderBanglaDBPicker('${s.id}',${i})" style="font-size:14px; margin-bottom:10px;" />
+                <div id="sq-bn-dbpick-list-${s.id}-${i}" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;"></div>
+                <button onclick="toggleBanglaDBPicker('${s.id}',${i})" style="margin-top:10px; padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">✕ বন্ধ</button>
+              </div>
               <!-- Add form -->
               <div id="sq-bn-form-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
                 <label>📝 বাংলা অর্থ</label>
@@ -3253,6 +3337,10 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                   style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--muted); border:1.5px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
                   🔍
                 </button>
+                <button onclick="toggleNoteDBPicker('${s.id}',${i})" id="sq-nt-dbpick-toggle-${s.id}-${i}"
+                  style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--gold); border:1.5px solid var(--gold); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
+                  📂 Database থেকে বাছাই
+                </button>
                 <div id="sq-nt-search-box-${s.id}-${i}" style="display:none; flex:1; position:relative;">
                   <input type="text" id="sq-nt-search-${s.id}-${i}" placeholder="Search..."
                     oninput="filterNoteList('${s.id}',${i})"
@@ -3260,6 +3348,14 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                 </div>
               </div>
               <div id="sq-nt-search-count-${s.id}-${i}" style="font-size:11px; color:var(--muted); margin-top:-8px; margin-bottom:8px;"></div>
+              <!-- Pick from main Database -->
+              <div id="sq-nt-dbpick-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
+                <label>🔍 মূল Database থেকে খুঁজুন</label>
+                <input type="text" id="sq-nt-dbpick-search-${s.id}-${i}" placeholder="খুঁজুন..."
+                  oninput="renderNoteDBPicker('${s.id}',${i})" style="font-size:14px; margin-bottom:10px;" />
+                <div id="sq-nt-dbpick-list-${s.id}-${i}" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;"></div>
+                <button onclick="toggleNoteDBPicker('${s.id}',${i})" style="margin-top:10px; padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">✕ বন্ধ</button>
+              </div>
               <!-- Add form -->
               <div id="sq-nt-form-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
                 <label>💡 তাফসির / নোট</label>
@@ -3289,6 +3385,10 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                   style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--muted); border:1.5px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
                   🔍
                 </button>
+                <button onclick="toggleRandomDBPicker('${s.id}',${i})" id="sq-rn-dbpick-toggle-${s.id}-${i}"
+                  style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--gold); border:1.5px solid var(--gold); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
+                  📂 Database থেকে বাছাই
+                </button>
                 <div id="sq-rn-search-box-${s.id}-${i}" style="display:none; flex:1; position:relative;">
                   <input type="text" id="sq-rn-search-${s.id}-${i}" placeholder="Search..."
                     oninput="filterRandomList('${s.id}',${i})"
@@ -3296,6 +3396,14 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                 </div>
               </div>
               <div id="sq-rn-search-count-${s.id}-${i}" style="font-size:11px; color:var(--muted); margin-top:-8px; margin-bottom:8px;"></div>
+              <!-- Pick from main Database -->
+              <div id="sq-rn-dbpick-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
+                <label>🔍 মূল Database থেকে খুঁজুন</label>
+                <input type="text" id="sq-rn-dbpick-search-${s.id}-${i}" placeholder="খুঁজুন..."
+                  oninput="renderRandomDBPicker('${s.id}',${i})" style="font-size:14px; margin-bottom:10px;" />
+                <div id="sq-rn-dbpick-list-${s.id}-${i}" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;"></div>
+                <button onclick="toggleRandomDBPicker('${s.id}',${i})" style="margin-top:10px; padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">✕ বন্ধ</button>
+              </div>
               <!-- Add form -->
               <div id="sq-rn-form-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
                 <label>🎲 Random</label>
@@ -3324,6 +3432,10 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                   style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--muted); border:1.5px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
                   🔍
                 </button>
+                <button onclick="toggleMyNoteDBPicker('${s.id}',${i})" id="sq-mn-dbpick-toggle-${s.id}-${i}"
+                  style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:var(--surface2); color:var(--gold); border:1.5px solid var(--gold); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
+                  📂 Database থেকে বাছাই
+                </button>
                 <div id="sq-mn-search-box-${s.id}-${i}" style="display:none; flex:1; position:relative;">
                   <input type="text" id="sq-mn-search-${s.id}-${i}" placeholder="Search..."
                     oninput="filterMyNoteList('${s.id}',${i})"
@@ -3331,6 +3443,14 @@ Respond ONLY with valid JSON in this exact format, nothing else:
                 </div>
               </div>
               <div id="sq-mn-search-count-${s.id}-${i}" style="font-size:11px; color:var(--muted); margin-top:-8px; margin-bottom:8px;"></div>
+              <!-- Pick from main Database -->
+              <div id="sq-mn-dbpick-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
+                <label>🔍 মূল Database থেকে খুঁজুন</label>
+                <input type="text" id="sq-mn-dbpick-search-${s.id}-${i}" placeholder="খুঁজুন..."
+                  oninput="renderMyNoteDBPicker('${s.id}',${i})" style="font-size:14px; margin-bottom:10px;" />
+                <div id="sq-mn-dbpick-list-${s.id}-${i}" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;"></div>
+                <button onclick="toggleMyNoteDBPicker('${s.id}',${i})" style="margin-top:10px; padding:10px 16px; background:transparent; border:1.5px solid var(--border); border-radius:8px; font-family:'Hind Siliguri',sans-serif; font-size:13px; cursor:pointer; color:var(--muted);">✕ বন্ধ</button>
+              </div>
               <div id="sq-mn-form-${s.id}-${i}" class="db-add-form" style="padding:14px; margin:0 0 12px 0; display:none;">
                 <label>📓 Note</label>
                 <input type="text" id="sq-mn-q-${s.id}-${i}" placeholder="লিখুন..." style="font-size:14px;" />
@@ -3476,6 +3596,169 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     if (btn) { btn.textContent = '➕ Add'; btn.style.background = 'var(--text)'; }
     showToast('✅ Added!', 'green');
   }
+
+  function toggleVocabDBPicker(sid, i) {
+    const box = document.getElementById('sq-vocab-dbpick-' + sid + '-' + i);
+    if (!box) return;
+    const show = box.style.display === 'none';
+    box.style.display = show ? 'block' : 'none';
+    if (show) {
+      // Close the manual add form if it's open
+      const form = document.getElementById('sq-vocab-form-' + sid + '-' + i);
+      const addBtn = document.getElementById('sq-vocab-toggle-' + sid + '-' + i);
+      if (form) form.style.display = 'none';
+      if (addBtn) { addBtn.textContent = '➕ Add'; addBtn.style.background = 'var(--text)'; }
+      renderVocabDBPicker(sid, i);
+      const inp = document.getElementById('sq-vocab-dbpick-search-' + sid + '-' + i);
+      if (inp) { inp.value = ''; inp.focus(); }
+    }
+  }
+  window.toggleVocabDBPicker = toggleVocabDBPicker;
+
+  function renderVocabDBPicker(sid, i) {
+    const listEl = document.getElementById('sq-vocab-dbpick-list-' + sid + '-' + i);
+    if (!listEl) return;
+    const searchInp = document.getElementById('sq-vocab-dbpick-search-' + sid + '-' + i);
+    const q = (searchInp ? searchInp.value.trim().toLowerCase() : '');
+
+    let items = database.map((d, idx) => ({ ...d, dbIndex: idx }));
+    if (q) {
+      items = items.filter(d => (d.q || '').toLowerCase().includes(q) || (d.a || '').toLowerCase().includes(q));
+    }
+
+    if (items.length === 0) {
+      listEl.innerHTML = '<div style="font-size:13px; color:var(--muted); padding:8px 0;">কোনো শব্দ পাওয়া যায়নি। আগে মূল Database ট্যাব থেকে শব্দ যোগ করুন।</div>';
+      return;
+    }
+
+    listEl.innerHTML = items.slice(0, 100).map(d => `
+      <div onclick="pickVocabFromDB('${sid}',${i},${d.dbIndex})"
+        style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 12px; background:var(--bg); border:1.5px solid var(--border); border-radius:8px; cursor:pointer;">
+        <div style="min-width:0; flex:1;">
+          <div style="font-size:14px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escHtml(d.q)}</div>
+          <div style="font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escHtml(d.a)}</div>
+        </div>
+        <span style="font-size:16px; color:var(--gold); flex-shrink:0;">➕</span>
+      </div>
+    `).join('');
+  }
+  window.renderVocabDBPicker = renderVocabDBPicker;
+
+  async function pickVocabFromDB(sid, i, dbIndex) {
+    const d = database[dbIndex];
+    if (!d) return;
+    const s = surahs.find(x => x.id == sid);
+    if (!s || !s.qaList || !s.qaList[i]) return;
+    if (!s.qaList[i].vocabList) s.qaList[i].vocabList = [];
+
+    const already = s.qaList[i].vocabList.some(v => v.word === d.q && v.answer === d.a);
+    if (already) { showToast('⚠️ ইতিমধ্যে যোগ করা আছে', 'gold'); return; }
+
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    s.qaList[i].vocabList.push({ word: d.q, answer: d.a, date, time });
+    await saveSurahs();
+    renderVocabList(sid, i, s.qaList[i].vocabList);
+    showToast('✅ যোগ হয়েছে!', 'green');
+  }
+  window.pickVocabFromDB = pickVocabFromDB;
+
+  // ── Generic "pick from main Database" helper ─────────────────────
+  function _dbPickToggle(prefix, sid, i, renderFn) {
+    const box = document.getElementById('sq-' + prefix + '-dbpick-' + sid + '-' + i);
+    if (!box) return;
+    const show = box.style.display === 'none';
+    box.style.display = show ? 'block' : 'none';
+    if (show) {
+      const form = document.getElementById('sq-' + prefix + '-form-' + sid + '-' + i);
+      const addBtn = document.getElementById('sq-' + prefix + '-toggle-' + sid + '-' + i);
+      if (form) form.style.display = 'none';
+      if (addBtn) { addBtn.textContent = '➕ Add'; addBtn.style.background = 'var(--text)'; }
+      renderFn(sid, i);
+      const inp = document.getElementById('sq-' + prefix + '-dbpick-search-' + sid + '-' + i);
+      if (inp) { inp.value = ''; inp.focus(); }
+    }
+  }
+
+  function _dbPickRender(prefix, sid, i, onClickFnName) {
+    const listEl = document.getElementById('sq-' + prefix + '-dbpick-list-' + sid + '-' + i);
+    if (!listEl) return;
+    const searchInp = document.getElementById('sq-' + prefix + '-dbpick-search-' + sid + '-' + i);
+    const q = (searchInp ? searchInp.value.trim().toLowerCase() : '');
+
+    let items = database.map((d, idx) => ({ ...d, dbIndex: idx }));
+    if (q) {
+      items = items.filter(d => (d.q || '').toLowerCase().includes(q) || (d.a || '').toLowerCase().includes(q));
+    }
+
+    if (items.length === 0) {
+      listEl.innerHTML = '<div style="font-size:13px; color:var(--muted); padding:8px 0;">কোনো শব্দ পাওয়া যায়নি। আগে মূল Database ট্যাব থেকে শব্দ যোগ করুন।</div>';
+      return;
+    }
+
+    listEl.innerHTML = items.slice(0, 100).map(d => `
+      <div onclick="${onClickFnName}('${sid}',${i},${d.dbIndex})"
+        style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 12px; background:var(--bg); border:1.5px solid var(--border); border-radius:8px; cursor:pointer;">
+        <div style="min-width:0; flex:1;">
+          <div style="font-size:14px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escHtml(d.q)}</div>
+          <div style="font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escHtml(d.a)}</div>
+        </div>
+        <span style="font-size:16px; color:var(--gold); flex-shrink:0;">➕</span>
+      </div>
+    `).join('');
+  }
+
+  async function _dbPickAdd(sid, i, dbIndex, listField, renderListFn) {
+    const d = database[dbIndex];
+    if (!d) return;
+    const s = surahs.find(x => x.id == sid);
+    if (!s || !s.qaList || !s.qaList[i]) return;
+    if (!s.qaList[i][listField]) s.qaList[i][listField] = [];
+
+    const already = s.qaList[i][listField].some(v => v.word === d.q && v.answer === d.a);
+    if (already) { showToast('⚠️ ইতিমধ্যে যোগ করা আছে', 'gold'); return; }
+
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB');
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    s.qaList[i][listField].push({ word: d.q, answer: d.a, date, time });
+    await saveSurahs();
+    renderListFn(sid, i, s.qaList[i][listField]);
+    showToast('✅ যোগ হয়েছে!', 'green');
+  }
+
+  // বাংলা অর্থ
+  function toggleBanglaDBPicker(sid, i) { _dbPickToggle('bn', sid, i, renderBanglaDBPicker); }
+  function renderBanglaDBPicker(sid, i) { _dbPickRender('bn', sid, i, 'pickBanglaFromDB'); }
+  async function pickBanglaFromDB(sid, i, dbIndex) { await _dbPickAdd(sid, i, dbIndex, 'banglaList', renderBanglaList); }
+  window.toggleBanglaDBPicker = toggleBanglaDBPicker;
+  window.renderBanglaDBPicker = renderBanglaDBPicker;
+  window.pickBanglaFromDB = pickBanglaFromDB;
+
+  // তাফসির / নোট
+  function toggleNoteDBPicker(sid, i) { _dbPickToggle('nt', sid, i, renderNoteDBPicker); }
+  function renderNoteDBPicker(sid, i) { _dbPickRender('nt', sid, i, 'pickNoteFromDB'); }
+  async function pickNoteFromDB(sid, i, dbIndex) { await _dbPickAdd(sid, i, dbIndex, 'noteList', renderNoteList); }
+  window.toggleNoteDBPicker = toggleNoteDBPicker;
+  window.renderNoteDBPicker = renderNoteDBPicker;
+  window.pickNoteFromDB = pickNoteFromDB;
+
+  // Random
+  function toggleRandomDBPicker(sid, i) { _dbPickToggle('rn', sid, i, renderRandomDBPicker); }
+  function renderRandomDBPicker(sid, i) { _dbPickRender('rn', sid, i, 'pickRandomFromDB'); }
+  async function pickRandomFromDB(sid, i, dbIndex) { await _dbPickAdd(sid, i, dbIndex, 'randomList', renderRandomList); }
+  window.toggleRandomDBPicker = toggleRandomDBPicker;
+  window.renderRandomDBPicker = renderRandomDBPicker;
+  window.pickRandomFromDB = pickRandomFromDB;
+
+  // Note (mynote)
+  function toggleMyNoteDBPicker(sid, i) { _dbPickToggle('mn', sid, i, renderMyNoteDBPicker); }
+  function renderMyNoteDBPicker(sid, i) { _dbPickRender('mn', sid, i, 'pickMyNoteFromDB'); }
+  async function pickMyNoteFromDB(sid, i, dbIndex) { await _dbPickAdd(sid, i, dbIndex, 'myNoteList', renderMyNoteList); }
+  window.toggleMyNoteDBPicker = toggleMyNoteDBPicker;
+  window.renderMyNoteDBPicker = renderMyNoteDBPicker;
+  window.pickMyNoteFromDB = pickMyNoteFromDB;
   window.addVocabItem = addVocabItem;
 
   function toggleVocabSearch(sid, i) {
