@@ -5529,18 +5529,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     }
   });
 
-  // Dismiss keyboard on scroll (mobile)
-  let lastScrollY = 0;
-  document.querySelector('main').addEventListener('scroll', function() {
-    const diff = Math.abs(this.scrollTop - lastScrollY);
-    if (diff > 50) {
-      const active = document.activeElement;
-      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
-        active.blur();
-      }
-    }
-    lastScrollY = this.scrollTop;
-  }, { passive: true });
+  // (Removed: auto keyboard-dismiss-on-scroll — was force-closing inputs unexpectedly)
 
   // Prevent double-tap zoom via CSS touch-action (no JS needed, no event conflicts)
   // touch-action: manipulation is already set on buttons via inline styles
