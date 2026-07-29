@@ -3589,11 +3589,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     if (ansInp) ansInp.value = '';
     await saveSurahs();
     renderVocabList(sid, i, s.qaList[i].vocabList);
-    // Close the form after adding
-    const form = document.getElementById('sq-vocab-form-' + sid + '-' + i);
-    const btn  = document.getElementById('sq-vocab-toggle-' + sid + '-' + i);
-    if (form) form.style.display = 'none';
-    if (btn) { btn.textContent = '➕ Add'; btn.style.background = 'var(--text)'; }
+    inp.focus();
     showToast('✅ Added!', 'green');
   }
 
@@ -4053,10 +4049,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     qInp.value = ''; if (aInp) aInp.value = '';
     await saveSurahs();
     renderBanglaList(sid, i, s.qaList[i].banglaList);
-    const form = document.getElementById('sq-bn-form-' + sid + '-' + i);
-    const btn  = document.getElementById('sq-bn-toggle-' + sid + '-' + i);
-    if (form) form.style.display = 'none';
-    if (btn) { btn.textContent = '➕ Add'; btn.style.background = 'var(--text)'; }
+    qInp.focus();
     showToast('✅ Added!', 'green');
   }
   window.addBanglaItem = addBanglaItem;
@@ -4211,10 +4204,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     qInp.value = ''; if (aInp) aInp.value = '';
     await saveSurahs();
     renderNoteList(sid, i, s.qaList[i].noteList);
-    const form = document.getElementById('sq-nt-form-' + sid + '-' + i);
-    const btn  = document.getElementById('sq-nt-toggle-' + sid + '-' + i);
-    if (form) form.style.display = 'none';
-    if (btn) { btn.textContent = '➕ Add'; btn.style.background = 'var(--text)'; }
+    qInp.focus();
     showToast('✅ Added!', 'green');
   }
   window.addNoteItem = addNoteItem;
@@ -4369,10 +4359,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     qInp.value = ''; if (aInp) aInp.value = '';
     await saveSurahs();
     renderRandomList(sid, i, s.qaList[i].randomList);
-    const form = document.getElementById('sq-rn-form-' + sid + '-' + i);
-    const btn  = document.getElementById('sq-rn-toggle-' + sid + '-' + i);
-    if (form) form.style.display = 'none';
-    if (btn) { btn.textContent = '➕ Add'; btn.style.background = 'var(--text)'; }
+    qInp.focus();
     showToast('✅ Added!', 'green');
   }
   window.addRandomItem = addRandomItem;
@@ -4527,10 +4514,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     qInp.value = ''; if (aInp) aInp.value = '';
     await saveSurahs();
     renderMyNoteList(sid, i, s.qaList[i].myNoteList);
-    const form = document.getElementById('sq-mn-form-' + sid + '-' + i);
-    const btn  = document.getElementById('sq-mn-toggle-' + sid + '-' + i);
-    if (form) form.style.display = 'none';
-    if (btn) { btn.textContent = '➕ Add'; btn.style.background = 'var(--text)'; }
+    qInp.focus();
     showToast('✅ Added!', 'green');
   }
   window.addMyNoteItem = addMyNoteItem;
