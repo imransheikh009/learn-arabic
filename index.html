@@ -4959,8 +4959,29 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.openSurahDetail = openSurahDetail;
   window.closeSurahDetail = closeSurahDetail;
 
+  // Track recent keyboard/input activity so we can tell a real hardware
+  // back-button press apart from the phone's on-screen keyboard closing
+  // (some Android keyboards fire a spurious "back" navigation when their
+  // Done/checkmark key is tapped, e.g. right after adding data).
+  let _lastKeyboardActivity = 0;
+  document.addEventListener('focusout', function(e) {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      _lastKeyboardActivity = Date.now();
+    }
+  }, true);
+
   // Handle Android/browser hardware back button
   window.addEventListener('popstate', function(e) {
+    // If this "back" happened right after typing/tapping Add on a field,
+    // it's almost certainly the keyboard closing, not a real back press —
+    // re-push the state so the surah detail view stays open.
+    if (Date.now() - _lastKeyboardActivity < 500) {
+      const detailView = document.getElementById('surah-detail-view');
+      if (detailView && detailView.style.display !== 'none' && activeSurahId != null) {
+        window.history.pushState({ surahDetail: activeSurahId }, '', '');
+        return;
+      }
+    }
     // If surah detail is open, go back to list
     const detailView = document.getElementById('surah-detail-view');
     if (detailView && detailView.style.display !== 'none') {
