@@ -3572,6 +3572,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.toggleAyatBody = toggleAyatBody;
 
   async function addVocabItem(sid, i) {
+    _markInputActivity();
     const inp    = document.getElementById('sq-uc-input-' + sid + '-' + i);
     const ansInp = document.getElementById('sq-uc-ans-'   + sid + '-' + i);
     if (!inp) return;
@@ -4035,6 +4036,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.filterBanglaList = filterBanglaList;
 
   async function addBanglaItem(sid, i) {
+    _markInputActivity();
     const qInp = document.getElementById('sq-bn-q-' + sid + '-' + i);
     const aInp = document.getElementById('sq-bn-a-' + sid + '-' + i);
     if (!qInp) return;
@@ -4190,6 +4192,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.filterNoteList = filterNoteList;
 
   async function addNoteItem(sid, i) {
+    _markInputActivity();
     const qInp = document.getElementById('sq-nt-q-' + sid + '-' + i);
     const aInp = document.getElementById('sq-nt-a-' + sid + '-' + i);
     if (!qInp) return;
@@ -4345,6 +4348,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.filterRandomList = filterRandomList;
 
   async function addRandomItem(sid, i) {
+    _markInputActivity();
     const qInp = document.getElementById('sq-rn-q-' + sid + '-' + i);
     const aInp = document.getElementById('sq-rn-a-' + sid + '-' + i);
     if (!qInp) return;
@@ -4500,6 +4504,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.filterMyNoteList = filterMyNoteList;
 
   async function addMyNoteItem(sid, i) {
+    _markInputActivity();
     const qInp = document.getElementById('sq-mn-q-' + sid + '-' + i);
     const aInp = document.getElementById('sq-mn-a-' + sid + '-' + i);
     if (!qInp) return;
@@ -4687,6 +4692,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   }
 
   async function saveSurahEdit(sid, i) {
+    _markInputActivity();
     i = parseInt(i);
     const s = surahs.find(x => x.id == sid);
     if (!s) return;
@@ -4731,6 +4737,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   }
 
   async function addAyatByCount() {
+    _markInputActivity();
     const input = document.getElementById('ayatCountInput');
     const count = parseInt(input ? input.value : 1);
     if (!count || count < 1 || count > 286) {
@@ -4758,6 +4765,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.addAyatByCount = addAyatByCount;
 
   async function promptAddAyatNumber() {
+    _markInputActivity();
     const s = surahs.find(x => x.id == activeSurahId);
     if (!s) return;
     if (!s.qaList) s.qaList = [];
@@ -4797,6 +4805,7 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   window.promptAddAyatNumber = promptAddAyatNumber;
 
   async function addSurahAyat() {
+    _markInputActivity();
     const title    = document.getElementById('s_title').value.trim();
     const arabic   = document.getElementById('s_arabic').value.trim();
     const uccharon = document.getElementById('s_uccharon').value.trim();
@@ -4964,6 +4973,11 @@ Respond ONLY with valid JSON in this exact format, nothing else:
   // (some Android keyboards fire a spurious "back" navigation when their
   // Done/checkmark key is tapped, e.g. right after adding data).
   let _lastKeyboardActivity = 0;
+  // Any "add/save" action inside a surah's ayat should call this immediately
+  // (before any awaited save) so the guard below has a fresh timestamp even
+  // if the actual DOM blur event is delayed or never fires cleanly.
+  function _markInputActivity() { _lastKeyboardActivity = Date.now(); }
+  window._markInputActivity = _markInputActivity;
   document.addEventListener('focusout', function(e) {
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
       _lastKeyboardActivity = Date.now();
@@ -4975,7 +4989,11 @@ Respond ONLY with valid JSON in this exact format, nothing else:
     // If this "back" happened right after typing/tapping Add on a field,
     // it's almost certainly the keyboard closing, not a real back press —
     // re-push the state so the surah detail view stays open.
-    if (Date.now() - _lastKeyboardActivity < 500) {
+    // (Window widened from 500ms → 2000ms: on real devices the keyboard's
+    // close animation + any save delay can easily exceed 500ms, which was
+    // causing genuine "just added data" moments to be misread as a real
+    // back press and kicking the user out to the surah list.)
+    if (Date.now() - _lastKeyboardActivity < 2000) {
       const detailView = document.getElementById('surah-detail-view');
       if (detailView && detailView.style.display !== 'none' && activeSurahId != null) {
         window.history.pushState({ surahDetail: activeSurahId }, '', '');
